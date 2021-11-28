@@ -25,7 +25,7 @@ func newTgBot(c *config) (*tgbotapi.BotAPI, error) {
 	}
 
 	bot.Debug = c.Production
-	log.Printf("authorised on accoung %s\n", bot.Self.UserName)
+	log.Printf("authorised on account %s\n", bot.Self.UserName)
 
 	return bot, nil
 }

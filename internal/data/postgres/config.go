@@ -5,6 +5,6 @@ import (
 )
 
 type Config struct {
-	PostgresUrl          string
-	Logger               *zap.SugaredLogger
+	PostgresUrl string
+	Logger      *zap.SugaredLogger
 }

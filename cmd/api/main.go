@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Eretic431/datingTelegramBot/internal/data/postgres"
 	"github.com/xlab/closer"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -10,6 +11,7 @@ import (
 type application struct {
 	config *config
 	log    *zap.SugaredLogger
+	users  *postgres.UserRepository
 }
 
 func main() {
@@ -49,4 +51,11 @@ func newLogger(c *config) (*zap.SugaredLogger, func(), error) {
 	}
 
 	return logger.Sugar(), cleanup, nil
+}
+
+func newPostgresConfig(c *config, logger *zap.SugaredLogger) *postgres.Config {
+	return &postgres.Config{
+		PostgresUrl:          c.PostgresUrl,
+		Logger:               logger,
+	}
 }

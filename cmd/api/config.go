@@ -3,8 +3,9 @@ package main
 import "github.com/caarlos0/env"
 
 type config struct {
-	Production bool   `env:"PRODUCTION" envDefault:"false"`
-	Port       string `env:"PORT" envDefault:"80"`
+	Production  bool   `env:"PRODUCTION" envDefault:"false"`
+	Port        string `env:"PORT" envDefault:"80"`
+	PostgresUrl string `env:"POSTGRES_URL" envDefault:"postgres://postgres:tutorpass@db:5432/postgres?sslmode=disable"`
 }
 
 func getConfig() (*config, error) {

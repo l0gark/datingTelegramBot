@@ -5,6 +5,10 @@
 
 package main
 
+import (
+	"github.com/Eretic431/datingTelegramBot/internal/data/postgres"
+)
+
 // Injectors from wire.go:
 
 func initApp() (*application, func(), error) {
@@ -12,9 +16,26 @@ func initApp() (*application, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	sugaredLogger, cleanup, err := newLogger(mainConfig)
+	if err != nil {
+		return nil, nil, err
+	}
+	postgresConfig := newPostgresConfig(mainConfig, sugaredLogger)
+	pool, cleanup2, err := postgres.NewPsqlPool(postgresConfig)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	userRepository := &postgres.UserRepository{
+		DB: pool,
+	}
 	mainApplication := &application{
 		config: mainConfig,
+		log:    sugaredLogger,
+		users:  userRepository,
 	}
 	return mainApplication, func() {
+		cleanup2()
+		cleanup()
 	}, nil
 }

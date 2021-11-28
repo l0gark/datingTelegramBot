@@ -7,6 +7,7 @@ import "github.com/google/wire"
 func initApp() (*application, func(), error) {
 	wire.Build(
 		getConfig,
+		newLogger,
 		wire.Struct(new(application), "*"),
 	)
 

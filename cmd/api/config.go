@@ -6,6 +6,7 @@ type config struct {
 	Production  bool   `env:"PRODUCTION" envDefault:"false"`
 	Port        string `env:"PORT" envDefault:"80"`
 	PostgresUrl string `env:"POSTGRES_URL" envDefault:"postgres://postgres:tutorpass@db:5432/postgres?sslmode=disable"`
+	TgBotToken  string `env:"BOT_TOKEN" envDefault:"none"`
 }
 
 func getConfig() (*config, error) {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Eretic431/datingTelegramBot/internal/data/postgres"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/xlab/closer"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -9,9 +10,11 @@ import (
 )
 
 type application struct {
-	config *config
-	log    *zap.SugaredLogger
-	users  *postgres.UserRepository
+	config  *config
+	log     *zap.SugaredLogger
+	users   *postgres.UserRepository
+	bot     *tgbotapi.BotAPI
+	updates tgbotapi.UpdatesChannel
 }
 
 func main() {
@@ -28,6 +31,8 @@ func main() {
 	if err != nil {
 		app.log.Fatalw("could not init server logger", "err", err)
 	}
+
+	app.handleUpdates()
 }
 
 func newLogger(c *config) (*zap.SugaredLogger, func(), error) {
@@ -55,7 +60,7 @@ func newLogger(c *config) (*zap.SugaredLogger, func(), error) {
 
 func newPostgresConfig(c *config, logger *zap.SugaredLogger) *postgres.Config {
 	return &postgres.Config{
-		PostgresUrl:          c.PostgresUrl,
-		Logger:               logger,
+		PostgresUrl: c.PostgresUrl,
+		Logger:      logger,
 	}
 }

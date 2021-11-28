@@ -14,6 +14,8 @@ func initApp() (*application, func(), error) {
 		newPostgresConfig,
 		postgres.NewPsqlPool,
 		wire.Struct(new(postgres.UserRepository), "*"),
+		newTgBot,
+		newTgBotUpdatesChan,
 		wire.Struct(new(application), "*"),
 	)
 

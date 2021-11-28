@@ -29,10 +29,19 @@ func initApp() (*application, func(), error) {
 	userRepository := &postgres.UserRepository{
 		DB: pool,
 	}
+	botAPI, err := newTgBot(mainConfig)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	updatesChannel := newTgBotUpdatesChan(botAPI)
 	mainApplication := &application{
-		config: mainConfig,
-		log:    sugaredLogger,
-		users:  userRepository,
+		config:  mainConfig,
+		log:     sugaredLogger,
+		users:   userRepository,
+		bot:     botAPI,
+		updates: updatesChannel,
 	}
 	return mainApplication, func() {
 		cleanup2()

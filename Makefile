@@ -11,12 +11,11 @@ docker-build:
 	cp go.sum $(WORKDIR)
 	cp -r cmd $(WORKDIR)
 	cp -r internal $(WORKDIR)
-	docker build -f ./build/package/Dockerfile . --tag ghcr.io/eretic431/datingtelegrambot
+	docker build -f ./Dockerfile . --tag ghcr.io/eretic431/datingtelegrambot
 	rm -rf $(WORKDIR)
 
 docker-push: docker-build
 	docker push ghcr.io/eretic431/datingtelegrambot:latest
-
 
 migrate_up:
 	migrate -path=./migrations -database=${DB_DSN} up ${VERSION}

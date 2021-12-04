@@ -1,7 +1,4 @@
-FROM golang:alpine AS builder
-
-ARG CGO_ENABLED=0
-ARG GOOS=linux
+FROM golang:1.17 AS builder
 
 WORKDIR /build
 
@@ -11,9 +8,10 @@ RUN go mod download
 COPY cmd cmd
 COPY internal internal
 
-RUN go build -o app ./cmd/api
+RUN go mod tidy
+RUN CGO_ENABLED=0 GOOS=linux go build -o app ./cmd/api
 
-FROM alpine
+FROM alpine:latest
 LABEL org.opencontainers.image.source=https://github.com/Eretic431/datingTelegramBot
 
 WORKDIR /app

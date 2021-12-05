@@ -37,7 +37,7 @@ func (lr *LikeRepository) Add(ctx context.Context, like *models.Like) error {
 	return nil
 }
 
-func (lr *LikeRepository) Get(ctx context.Context, id string) (*models.Like, error) {
+func (lr *LikeRepository) Get(ctx context.Context, id int64) (*models.Like, error) {
 	conn, err := lr.DB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (lr *LikeRepository) Update(ctx context.Context, like *models.Like) error {
 	return nil
 }
 
-func (lr *LikeRepository) Delete(ctx context.Context, id string) error {
+func (lr *LikeRepository) Delete(ctx context.Context, id int64) error {
 	conn, err := lr.DB.Acquire(ctx)
 	if err != nil {
 		return err

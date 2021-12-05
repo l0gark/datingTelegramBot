@@ -15,7 +15,6 @@ type UserRepository struct {
 	DB *pgxpool.Pool
 }
 
-// Add inserts user. How to get context? Call ctx := context.Background() and pass it to function below.
 func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 	conn, err := ur.DB.Acquire(ctx)
 	if err != nil {
@@ -23,12 +22,9 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 	}
 	defer conn.Release()
 
-	query := "INSERT INTO users (id) VALUES ($1);"
+	query := "INSERT INTO users (id, name, sex, age, description, city, image) VALUES ($1, $2, $3, $4, $5, $6, $7);"
 
-	if _, err := conn.Exec(ctx,
-		query,
-		user.Id); err != nil {
-
+	if _, err := conn.Exec(ctx, query, user.Id, user.Name, user.Sex, user.Age, user.Description, user.City, user.Image); err != nil {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr); pgErr.Code == pgerrcode.UniqueViolation {
@@ -49,9 +45,9 @@ func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*mode
 
 	defer conn.Release()
 
-	query := "SELECT id FROM users WHERE id=$1"
-
 	user := &models.User{}
+	query := "SELECT id, name, sex, age, description, city, image FROM users WHERE id=$1"
+
 	if err := pgxscan.Get(ctx, conn, user, query, userId); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNoRecord
@@ -61,4 +57,44 @@ func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*mode
 	}
 
 	return user, nil
+}
+
+func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User) error {
+	conn, err := ur.DB.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	stmt := "UPDATE users SET name=$2, sex=$3, age=$4, descriptions=$5, city=$6, image=$7 WHERE id=$1"
+
+	tag, err := conn.Exec(ctx, stmt, user.Id, user.Name, user.Sex, user.Age, user.Description, user.City, user.Image)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr); pgErr.Code == pgerrcode.UniqueViolation {
+			return models.ErrAlreadyExists
+		}
+		return err
+	}
+
+	if tag.RowsAffected() == 0 {
+		return models.ErrNoRecord
+	}
+
+	return nil
+}
+
+func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) error {
+	conn, err := ur.DB.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	stmt := "DELETE FROM users WHERE id = $1"
+	if _, err := conn.Exec(ctx, stmt, userId); err != nil {
+		return err
+	}
+
+	return nil
 }

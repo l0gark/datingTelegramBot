@@ -4,7 +4,7 @@ package models
 type User struct {
 	Id          string `db:"id"`
 	Name        string `db:"name"`
-	Sex         string `db:"sex"`
+	Sex         bool   `db:"sex"` // True if Sex is MALE, False if Sex is FEMALE
 	Age         int    `db:"age"`
 	Description string `db:"description"`
 	City        string `db:"city"`

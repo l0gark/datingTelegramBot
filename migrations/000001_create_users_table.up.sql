@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users
     name        varchar             NOT NULL,
     sex         boolean             NOT NULL,
     age         int                 NOT NULL,
-    description text                NOT NULL,
-    city        text                NOT NULL,
-    image       text                NOT NULL
+    description varchar             NOT NULL,
+    city        varchar             NOT NULL,
+    image       varchar             NOT NULL
 );

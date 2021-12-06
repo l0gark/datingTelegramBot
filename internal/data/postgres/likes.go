@@ -24,7 +24,11 @@ func (lr *LikeRepository) Add(ctx context.Context, like *models.Like) error {
 
 	query := "INSERT INTO likes (from_id, to_id, showed) VALUES ($1, $2, $3);"
 
-	if _, err := conn.Exec(ctx, query, like.FromId, like.ToId, like.Showed); err != nil {
+	if _, err := conn.Exec(ctx, query,
+		like.FromId,
+		like.ToId,
+		like.Showed,
+	); err != nil {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr); pgErr.Code == pgerrcode.UniqueViolation {
@@ -66,9 +70,14 @@ func (lr *LikeRepository) Update(ctx context.Context, like *models.Like) error {
 	}
 	defer conn.Release()
 
-	stmt := "UPDATE likes SET from_id=$2, to_id=$3, showed=$4 WHERE id=$1"
+	query := "UPDATE likes SET from_id=$2, to_id=$3, showed=$4 WHERE id=$1"
 
-	tag, err := conn.Exec(ctx, stmt, like.Id, like.FromId, like.ToId, like.Showed)
+	tag, err := conn.Exec(ctx, query,
+		like.Id,
+		like.FromId,
+		like.ToId,
+		like.Showed,
+	)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr); pgErr.Code == pgerrcode.UniqueViolation {
@@ -91,8 +100,8 @@ func (lr *LikeRepository) Delete(ctx context.Context, id int64) error {
 	}
 	defer conn.Release()
 
-	stmt := "DELETE FROM likes WHERE id = $1"
-	if _, err := conn.Exec(ctx, stmt, id); err != nil {
+	query := "DELETE FROM likes WHERE id = $1"
+	if _, err := conn.Exec(ctx, query, id); err != nil {
 		return err
 	}
 

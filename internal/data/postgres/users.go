@@ -24,7 +24,15 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 
 	query := "INSERT INTO users (id, name, sex, age, description, city, image) VALUES ($1, $2, $3, $4, $5, $6, $7);"
 
-	if _, err := conn.Exec(ctx, query, user.Id, user.Name, user.Sex, user.Age, user.Description, user.City, user.Image); err != nil {
+	if _, err := conn.Exec(ctx, query,
+		user.Id,
+		user.Name,
+		user.Sex,
+		user.Age,
+		user.Description,
+		user.City,
+		user.Image,
+	); err != nil {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr); pgErr.Code == pgerrcode.UniqueViolation {
@@ -48,7 +56,11 @@ func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*mode
 	user := &models.User{}
 	query := "SELECT id, name, sex, age, description, city, image FROM users WHERE id=$1"
 
-	if err := pgxscan.Get(ctx, conn, user, query, userId); err != nil {
+	if err := pgxscan.Get(ctx, conn,
+		user,
+		query,
+		userId,
+	); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNoRecord
 		}
@@ -66,14 +78,18 @@ func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User)
 	}
 	defer conn.Release()
 
-	stmt := "UPDATE users SET name=$2, sex=$3, age=$4, descriptions=$5, city=$6, image=$7 WHERE id=$1"
+	query := "UPDATE users SET name=$2, sex=$3, age=$4, description=$5, city=$6, image=$7 WHERE id=$1"
 
-	tag, err := conn.Exec(ctx, stmt, user.Id, user.Name, user.Sex, user.Age, user.Description, user.City, user.Image)
+	tag, err := conn.Exec(ctx, query,
+		user.Id,
+		user.Name,
+		user.Sex,
+		user.Age,
+		user.Description,
+		user.City,
+		user.Image,
+	)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr); pgErr.Code == pgerrcode.UniqueViolation {
-			return models.ErrAlreadyExists
-		}
 		return err
 	}
 
@@ -91,8 +107,8 @@ func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) err
 	}
 	defer conn.Release()
 
-	stmt := "DELETE FROM users WHERE id = $1"
-	if _, err := conn.Exec(ctx, stmt, userId); err != nil {
+	query := "DELETE FROM users WHERE id = $1"
+	if _, err := conn.Exec(ctx, query, userId); err != nil {
 		return err
 	}
 

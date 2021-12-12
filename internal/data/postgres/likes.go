@@ -107,3 +107,30 @@ func (lr *LikeRepository) Delete(ctx context.Context, id int64) error {
 
 	return nil
 }
+
+func (lr *LikeRepository) getNewMatches(ctx context.Context, userId string) ([]models.User, error) {
+	conn, err := lr.DB.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer conn.Release()
+
+	var users []models.User
+
+	query := "SELECT users.id, users.name, users.sex, users.age, users.description, users.city, users.image FROM users" +
+		" JOIN" +
+		" (SELECT likes1.from_id FROM likes as likes1" +
+		" 	JOIN likes as likes2 ON " +
+		" 		likes1.from_id = likes2.to_id AND " +
+		"		likes1.to_id = likes2.from_id" +
+		" 	WHERE likes1.showed = false AND (likes1.to_id = $1)" +
+		"	ORDER BY likes1.id) likes3 ON" +
+		" users.id = likes3.from_id;"
+
+	if err := pgxscan.Select(ctx, conn, users, query, userId); err != nil {
+		return nil, err
+	}
+
+	return users, err
+}

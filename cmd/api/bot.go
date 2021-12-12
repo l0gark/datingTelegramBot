@@ -36,18 +36,21 @@ func (a *application) handleUpdates() {
 func (a *application) handleCommandStart(inputMsg *tgbotapi.Message) *tgbotapi.MessageConfig {
 	a.log.Info("handleCommandStart")
 	outputMsg := tgbotapi.NewMessage(inputMsg.Chat.ID, "Hello")
+
 	return &outputMsg
 }
 
 func (a *application) handleCommandProfile(inputMsg *tgbotapi.Message) *tgbotapi.MessageConfig {
 	a.log.Info("handleCommandProfile")
 	outputMsg := tgbotapi.NewMessage(inputMsg.Chat.ID, "Hello")
+
 	return &outputMsg
 }
 
 func (a *application) handleCommandNext(inputMsg *tgbotapi.Message) *tgbotapi.MessageConfig {
 	a.log.Info("handleCommandNext")
 	outputMsg := tgbotapi.NewMessage(inputMsg.Chat.ID, "Hello")
+
 	return &outputMsg
 }
 
@@ -62,7 +65,6 @@ func (a *application) handleUndefinedMessage(inputMsg *tgbotapi.Message) *tgbota
 	outputMsg.ParseMode = tgbotapi.ModeMarkdown
 
 	return &outputMsg
-
 }
 
 func newTgBot(c *config) (*tgbotapi.BotAPI, error) {

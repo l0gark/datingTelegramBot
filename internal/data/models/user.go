@@ -10,4 +10,6 @@ type User struct {
 	City        string `db:"city"`
 	Image       string `db:"image"`
 	Started     bool   `db:"started"`
+	Stage       int    `db:"stage"`
+	ChatId      int64  `db:"chat_id"`
 }

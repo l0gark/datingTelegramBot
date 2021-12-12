@@ -19,8 +19,6 @@ func (a *application) handleUpdates() {
 }
 
 func newTgBot(c *config) (*tgbotapi.BotAPI, error) {
-	log.Printf("Telegram bot token %s \n", c.TgBotToken)
-
 	bot, err := tgbotapi.NewBotAPI(c.TgBotToken)
 	if err != nil {
 		return nil, err

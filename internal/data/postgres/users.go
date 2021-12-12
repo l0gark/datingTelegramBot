@@ -55,7 +55,7 @@ func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*mode
 	defer conn.Release()
 
 	user := &models.User{}
-	query := "SELECT id, name, sex, age, description, city, image FROM users WHERE id=$1"
+	query := "SELECT id, name, sex, age, description, city, image, started FROM users WHERE id=$1"
 
 	if err := pgxscan.Get(ctx, conn,
 		user,

@@ -3,47 +3,51 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 )
 
 func (a *application) handleUpdates() {
+	commands := make(map[string]struct{}, 3)
+	commands["/start"] = struct{}{}
+	commands["/profile"] = struct{}{}
+	commands["/next"] = struct{}{}
+
 	for update := range a.updates {
 		if update.Message == nil { // ignore any non-Message Updates
 			continue
 		}
 
-		ctx := context.Background()
+		_, ok := commands[update.Message.Text]
 
 		var outputMsg *tgbotapi.MessageConfig
 
-		switch update.Message.Text {
-		case "/start":
-			outputMsg = a.handleCommandStart(update.Message)
-		case "/profile":
+		if ok {
+			ctx := context.Background()
+
 			started, err := a.isStarted(ctx, update.Message)
 			if err != nil {
 				continue
 			}
 
 			if started {
-				outputMsg = a.handleCommandProfile(update.Message)
+				switch update.Message.Text {
+				case "/start":
+					outputMsg, _ = a.handleCommandStart(ctx, update.Message, true)
+				case "/profile":
+					outputMsg = a.handleCommandProfile(update.Message)
+				case "/next":
+					outputMsg = a.handleCommandNext(update.Message)
+				}
 			} else {
-				outputMsg = a.handleCommandStart(update.Message)
+				outputMsg, err = a.handleCommandStart(ctx, update.Message, false)
+				if err != nil {
+					continue
+				}
 			}
-		case "/next":
-			started, err := a.isStarted(ctx, update.Message)
-			if err != nil {
-				continue
-			}
-
-			if started {
-				outputMsg = a.handleCommandNext(update.Message)
-			} else {
-				outputMsg = a.handleCommandStart(update.Message)
-			}
-		default:
+		} else {
 			outputMsg = a.handleUndefinedMessage(update.Message)
 		}
 
@@ -76,7 +80,6 @@ func (a *application) isStarted(ctx context.Context, inputMsg *tgbotapi.Message)
 				a.log.Errorf("could not insert user with error %e", err)
 				return false, err
 			}
-
 			return false, nil
 		}
 		return false, err
@@ -85,11 +88,44 @@ func (a *application) isStarted(ctx context.Context, inputMsg *tgbotapi.Message)
 	return user.Started, nil
 }
 
-func (a *application) handleCommandStart(inputMsg *tgbotapi.Message) *tgbotapi.MessageConfig {
-	a.log.Info("handleCommandStart")
-	outputMsg := tgbotapi.NewMessage(inputMsg.Chat.ID, "Hello! I am dating bot")
+func (a *application) handleCommandStart(ctx context.Context, inputMsg *tgbotapi.Message, started bool) (*tgbotapi.MessageConfig, error) {
+	a.log.Infof("handleCommandStart, started = %t", started)
 
-	return &outputMsg
+	var text string
+
+	if started {
+		text = "Вы уже зарегистрированы в системе"
+	} else {
+		text = fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
+			"*Список доступных команд:* \n"+
+			"- /start - начало работы\n"+
+			"- /profile - заполнить анкету\n"+
+			"- /next - показать следующего пользователя",
+			a.bot.Self.UserName,
+		)
+
+		user := &models.User{
+			Id:          inputMsg.From.UserName,
+			Name:        "",
+			Sex:         false,
+			Age:         0,
+			Description: "",
+			City:        "",
+			Image:       "",
+			Started:     true,
+		}
+
+		err := a.users.UpdateByUserId(ctx, user)
+		if err != nil {
+			a.log.Errorf("could not update user with error %e", err)
+			return nil, err
+		}
+	}
+
+	outputMsg := tgbotapi.NewMessage(inputMsg.Chat.ID, text)
+	outputMsg.ParseMode = tgbotapi.ModeMarkdown
+
+	return &outputMsg, nil
 }
 
 func (a *application) handleCommandProfile(inputMsg *tgbotapi.Message) *tgbotapi.MessageConfig {

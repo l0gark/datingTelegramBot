@@ -9,4 +9,5 @@ type User struct {
 	Description string `db:"description"`
 	City        string `db:"city"`
 	Image       string `db:"image"`
+	Started     bool   `db:"started"`
 }

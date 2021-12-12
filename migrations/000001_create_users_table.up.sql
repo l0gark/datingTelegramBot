@@ -6,5 +6,6 @@ CREATE TABLE IF NOT EXISTS users
     age         int                 NOT NULL,
     description varchar             NOT NULL,
     city        varchar             NOT NULL,
-    image       varchar             NOT NULL
+    image       varchar             NOT NULL,
+    started     bool                NOT NULL
 );

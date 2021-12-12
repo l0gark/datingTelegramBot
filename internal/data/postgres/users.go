@@ -22,7 +22,7 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 	}
 	defer conn.Release()
 
-	query := "INSERT INTO users (id, name, sex, age, description, city, image) VALUES ($1, $2, $3, $4, $5, $6, $7);"
+	query := "INSERT INTO users (id, name, sex, age, description, city, image, started) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);"
 
 	if _, err := conn.Exec(ctx, query,
 		user.Id,
@@ -32,6 +32,7 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 		user.Description,
 		user.City,
 		user.Image,
+		user.Started,
 	); err != nil {
 		var pgErr *pgconn.PgError
 
@@ -78,7 +79,7 @@ func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User)
 	}
 	defer conn.Release()
 
-	query := "UPDATE users SET name=$2, sex=$3, age=$4, description=$5, city=$6, image=$7 WHERE id=$1"
+	query := "UPDATE users SET name=$2, sex=$3, age=$4, description=$5, city=$6, image=$7, started=$8 WHERE id=$1"
 
 	tag, err := conn.Exec(ctx, query,
 		user.Id,
@@ -88,6 +89,7 @@ func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User)
 		user.Description,
 		user.City,
 		user.Image,
+		user.Started,
 	)
 	if err != nil {
 		return err

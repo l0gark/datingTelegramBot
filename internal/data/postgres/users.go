@@ -119,3 +119,47 @@ func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) err
 
 	return nil
 }
+
+func (ur *UserRepository) GetNextUser(ctx context.Context, userId string, sex bool) (*models.User, error) {
+	conn, err := ur.DB.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer conn.Release()
+
+	user := &models.User{}
+	query := "SELECT id, name, sex, age, description, city, image, started, stage, chat_id FROM users" +
+		" WHERE id IN (" +
+		" SELECT user_ids.id as user_id FROM likes as likes2 " +
+		" 	RIGHT JOIN ( " +
+		"		SELECT users.id as id FROM users " +
+		"			LEFT JOIN ( " +
+		"				SELECT * FROM likes WHERE likes.from_id != $1" +
+		"			) likes1 ON users.id = likes1.to_id" +
+		"				 WHERE users.id != $1 " +
+		"						AND users.id NOT IN (" +
+		"							SELECT to_id as id FROM likes WHERE from_id = $1" +
+		"						) " +
+		"						AND users.sex != $2" +
+		"	) user_ids ON likes2.from_id = user_ids.id " +
+		"		WHERE likes2.to_id is NULL OR likes2.to_id = $1" +
+		"	ORDER BY likes2.value DESC NULLS LAST" +
+		"	LIMIT 1" +
+		");"
+
+	if err := pgxscan.Get(ctx, conn,
+		user,
+		query,
+		userId,
+		sex,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+
+		return nil, err
+	}
+
+	return user, nil
+}

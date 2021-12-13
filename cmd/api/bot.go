@@ -119,7 +119,7 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 
 	if strings.HasPrefix(cq.Data, "like") || strings.HasPrefix(cq.Data, "dislike") {
 		splitedData := strings.Split(cq.Data, ";")
-		userId := splitedData[1]
+		//userId := splitedData[1]
 
 		if splitedData[0] == "like" {
 

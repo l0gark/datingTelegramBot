@@ -58,7 +58,11 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 	var outputMsg tgbotapi.MessageConfig
 	var err error
 	if user != nil && user.Stage != ProfileStageNone {
-		outputMsg, err = a.handleFillingProfile(ctx, msg.Text, msg.Chat.ID, msg.Photo[0], user)
+		fileId := "-"
+		if len(msg.Photo) > 0 && msg.Photo[0].FileID != "" {
+			fileId = msg.Photo[0].FileID
+		}
+		outputMsg, err = a.handleFillingProfile(ctx, msg.Text, msg.Chat.ID, fileId, user)
 		if err != nil {
 			return
 		}
@@ -107,7 +111,7 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 		return
 	}
 
-	msg, err := a.handleFillingProfile(ctx, cq.Data, cq.Message.Chat.ID, "", user)
+	msg, err := a.handleFillingProfile(ctx, cq.Data, cq.Message.Chat.ID, user.Image, user)
 	if err != nil {
 		a.log.Errorf("could not handle profile filling with error %e", err)
 		return
@@ -197,7 +201,9 @@ func (a *application) handleCommandProfile(ctx context.Context, inputMsg *tgbota
 	}
 
 	outputMsg := tgbotapi.NewMessage(inputMsg.Chat.ID, stages[user.Stage])
-	outputMsg.ReplyMarkup = createSkipKeyboardMarkup(user.Name)
+	if len(user.Name) > 0 {
+		outputMsg.ReplyMarkup = createSkipKeyboardMarkup(user.Name)
+	}
 
 	return outputMsg, err
 }
@@ -242,34 +248,47 @@ func (a *application) handleFillingProfile(
 		city := currentData
 		if len(city) > 0 {
 			user.City = city
+			skipData = user.Description
 		} else {
 			correct = false
-			skipData = user.Description
+			skipData = user.City
 		}
 	case 3:
 		description := currentData
 		if len(description) > 0 {
 			user.Description = description
+			skipData = user.Image
 		} else {
 			correct = false
-			skipData = "-"
+			skipData = user.Description
 		}
 	case 4:
-		if len(photoId) > 0 {
+		if photoId != "-" {
 			user.Image = photoId
-		} else {
-			correct = false
 			if user.Sex {
 				skipData = "М"
 			} else {
 				skipData = "Ж"
 			}
+		} else {
+			correct = false
+			skipData = user.Image
 		}
 	case 5:
 		sex := currentData
-		if len(sex)
-	}
+		if sex == "М" || sex == "Ж" {
+			if sex == "М" {
+				user.Sex = true
+			} else {
+				user.Sex = false
+			}
+		} else {
+			correct = false
+		}
+	case 6:
+		skipData = ""
 
+	}
 	if correct {
 		if user.Stage < MaxProfileStage {
 			user.Stage += 1
@@ -283,14 +302,20 @@ func (a *application) handleFillingProfile(
 			return tgbotapi.MessageConfig{}, err
 		}
 
-		text = stages[user.Stage]
+		if user.Stage == ProfileStageNone {
+			text = "Профиль заполнен успешно"
+		} else {
+			text = stages[user.Stage]
+		}
 	} else {
 		text = "Данные введены некорректно, попробуйте снова."
 	}
 
 	outputMsg := tgbotapi.NewMessage(chatId, text)
 
-	outputMsg.ReplyMarkup = createSkipKeyboardMarkup(skipData)
+	if len(skipData) > 0 {
+		outputMsg.ReplyMarkup = createSkipKeyboardMarkup(skipData)
+	}
 
 	return outputMsg, nil
 }

@@ -24,7 +24,7 @@ services:
     image: ghcr.io/eretic431/datingtelegrambot:latest
     restart: unless-stopped
     environment:
-      - BOT_TOKEN=none
+      - BOT_TOKEN=5085296878:AAFm-DFK-_S0Eg7GpXhkq0S6XN1W9BhLVLU
     depends_on:
       - db
       - migrate

@@ -107,7 +107,7 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 		return
 	}
 
-	msg, err := a.handleFillingProfile(ctx, cq.Data, cq.Message.Chat.ID, user)
+	msg, err := a.handleFillingProfile(ctx, cq.Data, cq.Message.Chat.ID, "", user)
 	if err != nil {
 		a.log.Errorf("could not handle profile filling with error %e", err)
 		return
@@ -206,7 +206,7 @@ func (a *application) handleFillingProfile(
 	ctx context.Context,
 	inputText string,
 	chatId int64,
-	photo tgbotapi.PhotoSize,
+	photoId string,
 	user *models.User) (tgbotapi.MessageConfig, error) {
 	var text string
 	skipData := ""
@@ -255,16 +255,19 @@ func (a *application) handleFillingProfile(
 			skipData = "-"
 		}
 	case 4:
-		if len(photo.FileID) > 0 {
-			//file, err := a.bot.GetFile(tgbotapi.FileConfig{FileID: photo.FileID})
-			//tgbotapi.FileRea
-			//a.bot.Fil
+		if len(photoId) > 0 {
+			user.Image = photoId
 		} else {
 			correct = false
+			if user.Sex {
+				skipData = "М"
+			} else {
+				skipData = "Ж"
+			}
 		}
-
 	case 5:
-
+		sex := currentData
+		if len(sex)
 	}
 
 	if correct {

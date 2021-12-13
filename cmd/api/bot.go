@@ -15,14 +15,15 @@ const (
 	ProfileStageNone = -1
 )
 
-var stages map[int]string = make(map[int]string, 6)
+var (
+	stages   = make(map[int]string, 6)
+	commands = make(map[string]struct{}, 3)
+)
 
 func (a *application) handleUpdates() {
-	commands := make(map[string]struct{}, 3)
 	commands["start"] = struct{}{}
 	commands["profile"] = struct{}{}
 	commands["next"] = struct{}{}
-	commands["skip"] = struct{}{}
 
 	stages[0] = "Как Вас зовут?"
 	stages[1] = "Сколько Вам лет?"
@@ -32,90 +33,88 @@ func (a *application) handleUpdates() {
 	stages[5] = "Какого Вы пола? М/Ж"
 
 	for update := range a.updates {
-		if update.Message == nil { // ignore any non-Message Updates
-			continue
-		}
-
 		ctx := context.Background()
-
-		user, err := a.users.GetByUserId(ctx, update.Message.From.UserName)
-		if err != nil {
-			if !errors.Is(err, models.ErrNoRecord) {
-				continue
+		if update.Message != nil {
+			user, err := a.users.GetByUserId(ctx, update.Message.From.UserName)
+			if err != nil {
+				if !errors.Is(err, models.ErrNoRecord) {
+					continue
+				}
 			}
+			a.handleMessages(ctx, update.Message, user)
+		} else if update.CallbackQuery != nil {
+			user, err := a.users.GetByUserId(ctx, update.CallbackQuery.From.UserName)
+			if err != nil {
+				if !errors.Is(err, models.ErrNoRecord) {
+					continue
+				}
+			}
+			a.handleCallbackQueries(ctx, update.CallbackQuery, user)
 		}
+	}
+}
 
-		var outputMsg tgbotapi.MessageConfig
-
-		a.log.Infof("update with username = %s", update.Message.From.UserName)
-
-		if user != nil && user.Stage != ProfileStageNone {
-			a.log.Infof("update stage № = %d", user.Stage)
-
-			queryData := ""
-			if update.CallbackQuery != nil {
-				queryData = update.CallbackQuery.Data
-			}
-
-			outputMsg, err = a.handleFillingProfile(ctx, update.Message, &queryData, user)
+func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message, user *models.User) {
+	var outputMsg tgbotapi.MessageConfig
+	var err error
+	if user != nil && user.Stage != ProfileStageNone {
+		outputMsg, err = a.handleFillingProfile(ctx, msg.Text, msg.Chat.ID, msg.Photo[0], user)
+		if err != nil {
+			return
+		}
+	} else {
+		_, ok := commands[msg.Command()]
+		if ok {
+			started, err := a.isStarted(ctx, msg)
 			if err != nil {
 				return
 			}
-		} else {
-			a.log.Infof("Handle message or command")
 
-			_, ok := commands[update.Message.Command()]
-
-			if ok {
-				started, err := a.isStarted(ctx, update.Message)
-				if err != nil {
-					continue
+			if started {
+				var err error
+				switch msg.Command() {
+				case "start":
+					outputMsg, err = a.handleCommandStart(ctx, msg, started)
+				case "profile":
+					outputMsg, err = a.handleCommandProfile(ctx, msg, user)
+				case "next":
+					outputMsg, err = a.handleCommandNext(msg)
 				}
-
-				if started {
-					var err error
-
-					switch update.Message.Command() {
-					case "start":
-						outputMsg, err = a.handleCommandStart(ctx, update.Message, started)
-					case "profile":
-						outputMsg, err = a.handleCommandProfile(ctx, update.Message, user)
-					case "next":
-						outputMsg, err = a.handleCommandNext(update.Message)
-					}
-					if err != nil {
-						continue
-					}
-				} else {
-					outputMsg, err = a.handleCommandStart(ctx, update.Message, started)
-					if err != nil {
-						continue
-					}
+				if err != nil {
+					return
 				}
 			} else {
-				outputMsg = a.handleUndefinedMessage(update.Message)
+				outputMsg, err = a.handleCommandStart(ctx, msg, started)
+				if err != nil {
+					return
+				}
 			}
+		} else {
+			outputMsg = a.handleUndefinedMessage(msg)
 		}
+	}
 
-		if update.CallbackQuery != nil {
-			a.log.Infof("update.CallbackQuery != nil, data = %s", update.CallbackQuery.Data)
-			callback := tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data)
-			if _, err := a.bot.Request(callback); err != nil {
-				a.log.Errorf("could not request callback with error = %e", err)
-				continue
-			}
+	if _, err := a.bot.Send(outputMsg); err != nil {
+		a.log.Warnf("could not send message with error %e", err)
+		return
+	}
+}
 
-			// And finally, send a message containing the data received.
-			msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
-			if _, err := a.bot.Send(msg); err != nil {
-				panic(err)
-			}
-		}
+func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.CallbackQuery, user *models.User) {
+	callback := tgbotapi.NewCallback(cq.ID, cq.Data)
+	if _, err := a.bot.Request(callback); err != nil {
+		a.log.Errorf("could not request callback with error %e", err)
+		return
+	}
 
-		if _, err := a.bot.Send(outputMsg); err != nil {
-			a.log.Warnf("could not send message with error %e", err)
-			return
-		}
+	msg, err := a.handleFillingProfile(ctx, cq.Data, cq.Message.Chat.ID, user)
+	if err != nil {
+		a.log.Errorf("could not handle profile filling with error %e", err)
+		return
+	}
+	if _, err := a.bot.Send(msg); err != nil {
+		a.log.Errorf("could not send message with error %e", err)
+		return
 	}
 }
 
@@ -150,8 +149,6 @@ func (a *application) isStarted(ctx context.Context, inputMsg *tgbotapi.Message)
 }
 
 func (a *application) handleCommandStart(ctx context.Context, inputMsg *tgbotapi.Message, started bool) (tgbotapi.MessageConfig, error) {
-	a.log.Infof("handleCommandStart, started = %t", started)
-
 	var text string
 
 	if started {
@@ -205,21 +202,23 @@ func (a *application) handleCommandProfile(ctx context.Context, inputMsg *tgbota
 	return outputMsg, err
 }
 
-func (a *application) handleFillingProfile(ctx context.Context, inputMsg *tgbotapi.Message, callbackData *string, user *models.User) (tgbotapi.MessageConfig, error) {
-	a.log.Info("handleFillingProfile")
+func (a *application) handleFillingProfile(
+	ctx context.Context,
+	inputText string,
+	chatId int64,
+	photo tgbotapi.PhotoSize,
+	user *models.User) (tgbotapi.MessageConfig, error) {
 	var text string
-	skipData := "google"
+	skipData := ""
 
 	currentData := ""
-	if len(inputMsg.Text) > 0 {
-		currentData = inputMsg.Text
-	} else if callbackData != nil && len(*callbackData) > 0 {
-		currentData = *callbackData
+	if len(inputText) > 0 {
+		currentData = inputText
 	}
 
 	correct := true
 
-	// name, age, city, ...
+	// name, age, city, description, image, sex
 	switch user.Stage {
 	case 0:
 		name := currentData
@@ -245,8 +244,27 @@ func (a *application) handleFillingProfile(ctx context.Context, inputMsg *tgbota
 			user.City = city
 		} else {
 			correct = false
-			skipData = city
+			skipData = user.Description
 		}
+	case 3:
+		description := currentData
+		if len(description) > 0 {
+			user.Description = description
+		} else {
+			correct = false
+			skipData = "-"
+		}
+	case 4:
+		if len(photo.FileID) > 0 {
+			//file, err := a.bot.GetFile(tgbotapi.FileConfig{FileID: photo.FileID})
+			//tgbotapi.FileRea
+			//a.bot.Fil
+		} else {
+			correct = false
+		}
+
+	case 5:
+
 	}
 
 	if correct {
@@ -264,10 +282,10 @@ func (a *application) handleFillingProfile(ctx context.Context, inputMsg *tgbota
 
 		text = stages[user.Stage]
 	} else {
-		text = "Данные введены некорректны, попробуйте снова."
+		text = "Данные введены некорректно, попробуйте снова."
 	}
 
-	outputMsg := tgbotapi.NewMessage(inputMsg.Chat.ID, text)
+	outputMsg := tgbotapi.NewMessage(chatId, text)
 
 	outputMsg.ReplyMarkup = createSkipKeyboardMarkup(skipData)
 

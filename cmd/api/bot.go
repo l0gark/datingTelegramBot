@@ -257,22 +257,30 @@ func (a *application) handleFillingProfile(
 		description := currentData
 		if len(description) > 0 {
 			user.Description = description
-			skipData = user.Image
+			skipData = "NoImageData"
 		} else {
 			correct = false
 			skipData = user.Description
 		}
 	case 4:
-		if photoId != "-" {
-			user.Image = photoId
+		if photoId == "NoImageData" {
 			if user.Sex {
 				skipData = "М"
 			} else {
 				skipData = "Ж"
 			}
 		} else {
-			correct = false
-			skipData = user.Image
+			if photoId != "-" {
+				user.Image = photoId
+				if user.Sex {
+					skipData = "М"
+				} else {
+					skipData = "Ж"
+				}
+			} else {
+				correct = false
+				skipData = user.Image
+			}
 		}
 	case 5:
 		sex := currentData

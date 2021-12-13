@@ -136,17 +136,53 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 					a.log.Errorf("could not insert like with error %e", err)
 					return
 				}
-
+			} else {
+				a.log.Errorf("could not get like with error %e", err)
 				return
 			}
-			a.log.Errorf("could not get like with error %e", err)
-			return
 		} else {
 			oldLike.Value = likeValue
 			err := a.likes.Update(ctx, oldLike)
 			if err != nil {
 				a.log.Errorf("could not update like with error %e", err)
 				return
+			}
+		}
+
+		if likeValue {
+
+			reverseLike, err := a.likes.Get(ctx, userId, cq.From.UserName)
+			if err != nil {
+				if !errors.Is(err, models.ErrNoRecord) {
+					a.log.Errorf("could not get reverse like with error %e", err)
+					return
+				}
+			} else if reverseLike != nil && reverseLike.Value {
+				user2, err := a.users.GetByUserId(ctx, reverseLike.FromId)
+				if err != nil {
+					a.log.Errorf("could not get user with error %e", err)
+					return
+				}
+
+				ava1 := tgbotapi.FileID(user.Image)
+				match2Message := tgbotapi.NewPhoto(user2.ChatId, ava1)
+				match2Message.Caption = createMatchCaption(user)
+				match2Message.ParseMode = tgbotapi.ModeMarkdown
+
+				if _, err := a.bot.Send(match2Message); err != nil {
+					a.log.Errorf("could not send message with error %e", err)
+					return
+				}
+
+				ava2 := tgbotapi.FileID(user2.Image)
+				match1Message := tgbotapi.NewPhoto(user.ChatId, ava2)
+				match1Message.Caption = createMatchCaption(user2)
+				match1Message.ParseMode = tgbotapi.ModeMarkdown
+
+				if _, err := a.bot.Send(match1Message); err != nil {
+					a.log.Errorf("could not send message with error %e", err)
+					return
+				}
 			}
 		}
 

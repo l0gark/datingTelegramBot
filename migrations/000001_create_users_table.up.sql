@@ -7,5 +7,7 @@ CREATE TABLE IF NOT EXISTS users
     description varchar             NOT NULL,
     city        varchar             NOT NULL,
     image       varchar             NOT NULL,
-    started     bool                NOT NULL
+    started     bool                NOT NULL,
+    stage       int                 NOT NULL,
+    chat_id     int                 NOT NULL
 );

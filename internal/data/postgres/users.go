@@ -22,7 +22,7 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 	}
 	defer conn.Release()
 
-	query := "INSERT INTO users (id, name, sex, age, description, city, image, started) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);"
+	query := "INSERT INTO users (id, name, sex, age, description, city, image, started, stage, chat_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, -1, $9);"
 
 	if _, err := conn.Exec(ctx, query,
 		user.Id,
@@ -33,6 +33,7 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 		user.City,
 		user.Image,
 		user.Started,
+		user.ChatId,
 	); err != nil {
 		var pgErr *pgconn.PgError
 
@@ -55,7 +56,7 @@ func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*mode
 	defer conn.Release()
 
 	user := &models.User{}
-	query := "SELECT id, name, sex, age, description, city, image, started FROM users WHERE id=$1"
+	query := "SELECT id, name, sex, age, description, city, image, started, stage, chat_id FROM users WHERE id=$1;"
 
 	if err := pgxscan.Get(ctx, conn,
 		user,
@@ -79,7 +80,7 @@ func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User)
 	}
 	defer conn.Release()
 
-	query := "UPDATE users SET name=$2, sex=$3, age=$4, description=$5, city=$6, image=$7, started=$8 WHERE id=$1"
+	query := "UPDATE users SET name=$2, sex=$3, age=$4, description=$5, city=$6, image=$7, started=$8, stage=$9, chat_id=$10 WHERE id=$1;"
 
 	tag, err := conn.Exec(ctx, query,
 		user.Id,
@@ -90,6 +91,8 @@ func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User)
 		user.City,
 		user.Image,
 		user.Started,
+		user.Stage,
+		user.ChatId,
 	)
 	if err != nil {
 		return err
@@ -109,7 +112,7 @@ func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) err
 	}
 	defer conn.Release()
 
-	query := "DELETE FROM users WHERE id = $1"
+	query := "DELETE FROM users WHERE id = $1;"
 	if _, err := conn.Exec(ctx, query, userId); err != nil {
 		return err
 	}

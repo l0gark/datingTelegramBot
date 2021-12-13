@@ -84,7 +84,7 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 				case "profile":
 					outputMsg, err = a.handleCommandProfile(ctx, msg, user)
 				case "next":
-					outputMsg, err = a.handleCommandNext(msg)
+					outputMsg, err = a.handleCommandNext(ctx, msg, user)
 				}
 				if err != nil {
 					return

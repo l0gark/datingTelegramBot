@@ -141,17 +141,18 @@ func (a *application) handleFillingProfile(
 		photCfg := tgbotapi.NewPhoto(chatId, tgbotapi.FileID(user.Image))
 		sex := ""
 		if user.Sex {
-			sex = "М"
+			sex = "Мужчина"
 		} else {
-			sex = "Ж"
+			sex = "Женщина"
 		}
-		caption := fmt.Sprintf("Имя: %s\n"+
-			"Возраст: %d\n"+
-			"Город: %s\n"+
-			"Описание: %s\n"+
-			"Пол: %s\n" +
+		caption := fmt.Sprintf("*Имя*: %s\n"+
+			"*Возраст:* %d\n"+
+			"*Город:* %s\n"+
+			"*Описание:* %s\n"+
+			"*Пол:* %s\n\n"+
 			"Попробуйте ввести команду /next", user.Name, user.Age, user.City, user.Description, sex)
 		photCfg.Caption = caption
+		photCfg.ParseMode = tgbotapi.ModeMarkdown
 		return photCfg, nil
 	}
 

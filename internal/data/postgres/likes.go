@@ -22,12 +22,12 @@ func (lr *LikeRepository) Add(ctx context.Context, like *models.Like) error {
 	}
 	defer conn.Release()
 
-	query := "INSERT INTO likes (from_id, to_id, showed) VALUES ($1, $2, $3);"
+	query := "INSERT INTO likes (from_id, to_id, value) VALUES ($1, $2, $3);"
 
 	if _, err := conn.Exec(ctx, query,
 		like.FromId,
 		like.ToId,
-		like.Showed,
+		like.Value,
 	); err != nil {
 		var pgErr *pgconn.PgError
 
@@ -50,7 +50,7 @@ func (lr *LikeRepository) Get(ctx context.Context, id int64) (*models.Like, erro
 	defer conn.Release()
 
 	like := &models.Like{}
-	query := "SELECT id, from_id, to_id, showed FROM likes WHERE id=$1"
+	query := "SELECT id, from_id, to_id, value FROM likes WHERE id=$1"
 
 	if err := pgxscan.Get(ctx, conn, like, query, id); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -70,13 +70,13 @@ func (lr *LikeRepository) Update(ctx context.Context, like *models.Like) error {
 	}
 	defer conn.Release()
 
-	query := "UPDATE likes SET from_id=$2, to_id=$3, showed=$4 WHERE id=$1"
+	query := "UPDATE likes SET from_id=$2, to_id=$3, value=$4 WHERE id=$1"
 
 	tag, err := conn.Exec(ctx, query,
 		like.Id,
 		like.FromId,
 		like.ToId,
-		like.Showed,
+		like.Value,
 	)
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -124,7 +124,7 @@ func (lr *LikeRepository) getNewMatches(ctx context.Context, userId string) ([]m
 		" 	JOIN likes as likes2 ON " +
 		" 		likes1.from_id = likes2.to_id AND " +
 		"		likes1.to_id = likes2.from_id" +
-		" 	WHERE likes1.showed = false AND (likes1.to_id = $1)" +
+		" 	WHERE (likes1.value = true) AND (likes2.value = true) AND (likes1.to_id = $1)" +
 		"	ORDER BY likes1.id) likes3 ON" +
 		" users.id = likes3.from_id;"
 

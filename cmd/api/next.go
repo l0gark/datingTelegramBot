@@ -36,7 +36,7 @@ func (a *application) handleCommandNext(ctx context.Context, inputMsg *tgbotapi.
 		photoCfg.Caption = caption
 		photoCfg.ParseMode = tgbotapi.ModeMarkdown
 
-		//photoCfg.ReplyMarkup =
+		photoCfg.ReplyMarkup = createLikeKeyboardMarkup(nextUser.Id)
 		return photoCfg, nil
 	}
 

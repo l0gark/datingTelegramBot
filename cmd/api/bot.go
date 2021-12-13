@@ -6,6 +6,7 @@ import (
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
+	"strings"
 )
 
 const (
@@ -113,14 +114,30 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 		return
 	}
 
-	msg, err := a.handleFillingProfile(ctx, cq.Data, cq.Message.Chat.ID, user.Image, user)
+	var msg tgbotapi.Chattable
+	var err error
+
+	if strings.HasPrefix(cq.Data, "like") || strings.HasPrefix(cq.Data, "dislike") {
+		splitedData := strings.Split(cq.Data, ";")
+		userId := splitedData[1]
+
+		if splitedData[0] == "like" {
+
+		} else {
+
+		}
+
+	} else {
+		msg, err = a.handleFillingProfile(ctx, cq.Data, cq.Message.Chat.ID, user.Image, user)
+	}
+
 	if err != nil {
-		a.log.Errorf("could not handle profile filling with error %e", err)
-		return
+	a.log.Errorf("could not handle profile filling with error %e", err)
+	return
 	}
 	if _, err := a.bot.Send(msg); err != nil {
-		a.log.Errorf("could not send message with error %e", err)
-		return
+	a.log.Errorf("could not send message with error %e", err)
+	return
 	}
 }
 

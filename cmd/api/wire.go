@@ -1,4 +1,5 @@
-//+build wireinject
+//go:build wireinject
+// +build wireinject
 
 package main
 
@@ -14,6 +15,7 @@ func initApp() (*application, func(), error) {
 		newPostgresConfig,
 		postgres.NewPsqlPool,
 		wire.Struct(new(postgres.UserRepository), "*"),
+		wire.Struct(new(postgres.LikeRepository), "*"),
 		newTgBot,
 		newTgBotUpdatesChan,
 		wire.Struct(new(application), "*"),

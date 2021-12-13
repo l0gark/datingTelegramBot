@@ -257,7 +257,11 @@ func (a *application) handleFillingProfile(
 		description := currentData
 		if len(description) > 0 {
 			user.Description = description
-			skipData = "NoImageData"
+			if len(user.Image) == 0 {
+				skipData = "emptyImage"
+			} else {
+				skipData = "NoImageData"
+			}
 		} else {
 			correct = false
 			skipData = user.Description
@@ -311,7 +315,7 @@ func (a *application) handleFillingProfile(
 		}
 
 		if user.Stage == ProfileStageNone {
-			text = "Профиль заполнен успешно"
+			text = "Профиль заполнен успешно.\nПопробуйте ввести команду /next"
 		} else {
 			text = stages[user.Stage]
 		}
@@ -321,7 +325,7 @@ func (a *application) handleFillingProfile(
 
 	outputMsg := tgbotapi.NewMessage(chatId, text)
 
-	if len(skipData) > 0 {
+	if len(skipData) > 0 && skipData != "emptyImage" {
 		outputMsg.ReplyMarkup = createSkipKeyboardMarkup(skipData)
 	}
 

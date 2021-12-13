@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"strconv"
@@ -139,19 +138,7 @@ func (a *application) handleFillingProfile(
 
 	if user.Stage == ProfileStageNone {
 		photCfg := tgbotapi.NewPhoto(chatId, tgbotapi.FileID(user.Image))
-		sex := ""
-		if user.Sex {
-			sex = "Мужчина"
-		} else {
-			sex = "Женщина"
-		}
-		caption := fmt.Sprintf("*Имя*: %s\n"+
-			"*Возраст:* %d\n"+
-			"*Город:* %s\n"+
-			"*Описание:* %s\n"+
-			"*Пол:* %s\n\n"+
-			"Попробуйте ввести команду /next", user.Name, user.Age, user.City, user.Description, sex)
-		photCfg.Caption = caption
+		photCfg.Caption = createMyProfileCaption(user)
 		photCfg.ParseMode = tgbotapi.ModeMarkdown
 		return photCfg, nil
 	}

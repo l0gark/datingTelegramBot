@@ -8,20 +8,20 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func (a *application) handleCommandNext(ctx context.Context, inputMsg *tgbotapi.Message, user *models.User) (tgbotapi.Chattable, error) {
+func (a *application) handleCommandNext(ctx context.Context, chatId int64, user *models.User) (tgbotapi.Chattable, error) {
 	a.log.Info("handleCommandNext")
 
 	nextUser, err := a.users.GetNextUser(ctx, user.Id, user.Sex)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
-			return tgbotapi.NewMessage(inputMsg.Chat.ID, "А уже всё!"), nil
+			return tgbotapi.NewMessage(chatId, "А уже всё!"), nil
 		}
 		a.log.Errorf("could not get next user with error %e", err)
 		return tgbotapi.MessageConfig{}, err
 	}
 
 	if nextUser != nil {
-		photoCfg := tgbotapi.NewPhoto(inputMsg.Chat.ID, tgbotapi.FileID(nextUser.Image))
+		photoCfg := tgbotapi.NewPhoto(chatId, tgbotapi.FileID(nextUser.Image))
 		sex := ""
 		if nextUser.Sex {
 			sex = "Мужчина"
@@ -36,7 +36,7 @@ func (a *application) handleCommandNext(ctx context.Context, inputMsg *tgbotapi.
 		photoCfg.Caption = caption
 		photoCfg.ParseMode = tgbotapi.ModeMarkdown
 
-		//photoCfg.ReplyMarkup =
+		photoCfg.ReplyMarkup = createLikeKeyboardMarkup(nextUser.Id)
 		return photoCfg, nil
 	}
 

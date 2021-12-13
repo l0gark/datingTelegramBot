@@ -41,7 +41,7 @@ func (lr *LikeRepository) Add(ctx context.Context, like *models.Like) error {
 	return nil
 }
 
-func (lr *LikeRepository) Get(ctx context.Context, id int64) (*models.Like, error) {
+func (lr *LikeRepository) Get(ctx context.Context, userFromId string, userToId string) (*models.Like, error) {
 	conn, err := lr.DB.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -50,9 +50,9 @@ func (lr *LikeRepository) Get(ctx context.Context, id int64) (*models.Like, erro
 	defer conn.Release()
 
 	like := &models.Like{}
-	query := "SELECT id, from_id, to_id, value FROM likes WHERE id=$1"
+	query := "SELECT id, from_id, to_id, value FROM likes WHERE from_id=$1 AND to_id=$2"
 
-	if err := pgxscan.Get(ctx, conn, like, query, id); err != nil {
+	if err := pgxscan.Get(ctx, conn, like, query, userFromId, userToId); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNoRecord
 		}

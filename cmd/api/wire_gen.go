@@ -29,6 +29,9 @@ func initApp() (*application, func(), error) {
 	userRepository := &postgres.UserRepository{
 		DB: pool,
 	}
+	likeRepository := &postgres.LikeRepository{
+		DB: pool,
+	}
 	botAPI, err := newTgBot(mainConfig)
 	if err != nil {
 		cleanup2()
@@ -40,6 +43,7 @@ func initApp() (*application, func(), error) {
 		config:  mainConfig,
 		log:     sugaredLogger,
 		users:   userRepository,
+		likes:   likeRepository,
 		bot:     botAPI,
 		updates: updatesChannel,
 	}

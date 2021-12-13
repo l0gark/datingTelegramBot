@@ -11,3 +11,12 @@ func createSkipKeyboardMarkup(data string) tgbotapi.InlineKeyboardMarkup {
 		tgbotapi.NewInlineKeyboardRow(buttonData),
 	)
 }
+
+func createLikeKeyboardMarkup(toId string) tgbotapi.InlineKeyboardMarkup {
+	likeData := tgbotapi.NewInlineKeyboardButtonData("❤", "like;" + toId)
+	dislikeData := tgbotapi.NewInlineKeyboardButtonData("➡", "dislike;" + toId)
+
+	return tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(likeData, dislikeData),
+	)
+}

@@ -13,6 +13,7 @@ type application struct {
 	config  *config
 	log     *zap.SugaredLogger
 	users   *postgres.UserRepository
+	likes   *postgres.LikeRepository
 	bot     *tgbotapi.BotAPI
 	updates tgbotapi.UpdatesChannel
 }

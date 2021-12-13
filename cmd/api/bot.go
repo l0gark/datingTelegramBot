@@ -6,6 +6,7 @@ import (
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
+	"strings"
 )
 
 const (
@@ -84,7 +85,7 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 				case "profile":
 					outputMsg, err = a.handleCommandProfile(ctx, msg, user)
 				case "next":
-					outputMsg, err = a.handleCommandNext(ctx, msg, user)
+					outputMsg, err = a.handleCommandNext(ctx, msg.Chat.ID, user)
 				}
 				if err != nil {
 					return
@@ -113,7 +114,51 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 		return
 	}
 
-	msg, err := a.handleFillingProfile(ctx, cq.Data, cq.Message.Chat.ID, user.Image, user)
+	var msg tgbotapi.Chattable
+	var err error
+
+	if strings.HasPrefix(cq.Data, "like") || strings.HasPrefix(cq.Data, "dislike") {
+		splitedData := strings.Split(cq.Data, ";")
+		userId := splitedData[1]
+
+		likeValue := splitedData[0] == "like"
+
+		oldLike, err := a.likes.Get(ctx, cq.From.UserName, userId)
+		if err != nil {
+			if errors.Is(err, models.ErrNoRecord) {
+				err := a.likes.Add(ctx, &models.Like{
+					FromId: cq.From.UserName,
+					ToId:   userId,
+					Value:  likeValue,
+				})
+
+				if err != nil {
+					a.log.Errorf("could not insert like with error %e", err)
+					return
+				}
+
+				return
+			}
+			a.log.Errorf("could not get like with error %e", err)
+			return
+		} else {
+			oldLike.Value = likeValue
+			err := a.likes.Update(ctx, oldLike)
+			if err != nil {
+				a.log.Errorf("could not update like with error %e", err)
+				return
+			}
+		}
+
+		msg, err = a.handleCommandNext(ctx, cq.Message.Chat.ID, user)
+		if err != nil {
+			return
+		}
+
+	} else {
+		msg, err = a.handleFillingProfile(ctx, cq.Data, cq.Message.Chat.ID, user.Image, user)
+	}
+
 	if err != nil {
 		a.log.Errorf("could not handle profile filling with error %e", err)
 		return

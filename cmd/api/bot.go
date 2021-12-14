@@ -56,11 +56,18 @@ func (a *application) handleUpdates() {
 func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message, user *models.User) {
 	var outputMsg tgbotapi.Chattable
 	var err error
+
+	if len(msg.Photo) > 0 && msg.Photo[0].FileID != "" {
+		photo := msg.Photo[0].FileID
+		a.log.Infof("receive file with id = %s", photo)
+	}
+
 	if user != nil && user.Stage != ProfileStageNone {
 		fileId := "-"
 		if len(msg.Photo) > 0 && msg.Photo[0].FileID != "" {
 			fileId = msg.Photo[0].FileID
 		}
+
 		if msg.IsCommand() {
 			outputMsg = tgbotapi.NewMessage(msg.Chat.ID, "Пожалуйста дозаполните анкету.")
 		} else {

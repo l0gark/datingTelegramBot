@@ -142,8 +142,7 @@ func (ur *UserRepository) GetNextUser(ctx context.Context, userId string, sex bo
 		"							SELECT to_id as id FROM likes WHERE from_id = $1" +
 		"						) " +
 		"						AND users.sex != $2" +
-		"	) user_ids ON likes2.from_id = user_ids.id " +
-		"		WHERE likes2.to_id is NULL OR likes2.to_id = $1" +
+		"	) user_ids ON likes2.from_id = user_ids.id AND likes2.to_id = $1 " +
 		"	ORDER BY likes2.value DESC NULLS LAST" +
 		"	LIMIT 1" +
 		");"

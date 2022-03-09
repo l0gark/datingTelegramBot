@@ -8,11 +8,14 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type UserRepository struct {
-	DB *pgxpool.Pool
+	DB PgxPoolIface
+}
+
+func NewUserRepository(DB PgxPoolIface) *UserRepository {
+	return &UserRepository{DB: DB}
 }
 
 func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {

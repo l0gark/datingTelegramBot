@@ -22,13 +22,22 @@ func NewUserRepository(DB PgxPoolIface) *UserRepository {
 	return &UserRepository{DB: DB}
 }
 
-func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
+func (ur *UserRepository) Add(ctx context.Context, user *models.User) (err error) {
 	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
 
-	if _, err := tx.Exec(ctx, AddUserQuery,
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
+
+	if _, err = tx.Exec(ctx, AddUserQuery,
 		user.Id,
 		user.Name,
 		user.Sex,
@@ -48,7 +57,7 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 		return err
 	}
 
-	return tx.Commit(ctx)
+	return
 }
 
 func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*models.User, error) {
@@ -67,6 +76,7 @@ func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*mode
 		query,
 		userId,
 	); err != nil {
+
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNoRecord
 		}

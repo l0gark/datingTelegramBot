@@ -10,10 +10,6 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-const (
-	AddUserQuery = "INSERT INTO users (id, name, sex, age, description, city, image, started, stage, chat_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, -1, $9);"
-)
-
 type UserRepository struct {
 	DB PgxPoolIface
 }
@@ -37,7 +33,9 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) (err error
 		}
 	}()
 
-	if _, err = tx.Exec(ctx, AddUserQuery,
+	query := "INSERT INTO users (id, name, sex, age, description, city, image, started, stage, chat_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, -1, $9);"
+
+	if _, err = tx.Exec(ctx, query,
 		user.Id,
 		user.Name,
 		user.Sex,
@@ -87,16 +85,24 @@ func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*mode
 	return user, nil
 }
 
-func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User) error {
-	conn, err := ur.DB.Acquire(ctx)
+func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User) (err error) {
+	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer conn.Release()
+
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	query := "UPDATE users SET name=$2, sex=$3, age=$4, description=$5, city=$6, image=$7, started=$8, stage=$9, chat_id=$10 WHERE id=$1;"
 
-	tag, err := conn.Exec(ctx, query,
+	tag, err := tx.Exec(ctx, query,
 		user.Id,
 		user.Name,
 		user.Sex,
@@ -116,7 +122,7 @@ func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User)
 		return models.ErrNoRecord
 	}
 
-	return nil
+	return
 }
 
 func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) error {

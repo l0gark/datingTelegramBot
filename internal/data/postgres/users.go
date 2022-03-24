@@ -62,17 +62,24 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 }
 
 func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*models.User, error) {
-	conn, err := ur.DB.Acquire(ctx)
+	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	defer conn.Release()
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	user := &models.User{}
 	query := "SELECT id, name, sex, age, description, city, image, started, stage, chat_id FROM users WHERE id=$1;"
 
-	if err := pgxscan.Get(ctx, conn,
+	if err := pgxscan.Get(ctx, tx,
 		user,
 		query,
 		userId,
@@ -129,14 +136,22 @@ func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User)
 }
 
 func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) error {
-	conn, err := ur.DB.Acquire(ctx)
+	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer conn.Release()
+
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	query := "DELETE FROM users WHERE id = $1;"
-	if _, err := conn.Exec(ctx, query, userId); err != nil {
+	if _, err := tx.Exec(ctx, query, userId); err != nil {
 		return err
 	}
 
@@ -144,12 +159,19 @@ func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) err
 }
 
 func (ur *UserRepository) GetNextUser(ctx context.Context, userId string, sex bool) (*models.User, error) {
-	conn, err := ur.DB.Acquire(ctx)
+	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	defer conn.Release()
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	user := &models.User{}
 	query := "SELECT id, name, sex, age, description, city, image, started, stage, chat_id FROM users" +
@@ -170,7 +192,7 @@ func (ur *UserRepository) GetNextUser(ctx context.Context, userId string, sex bo
 		"	LIMIT 1" +
 		");"
 
-	if err := pgxscan.Get(ctx, conn,
+	if err := pgxscan.Get(ctx, tx,
 		user,
 		query,
 		userId,

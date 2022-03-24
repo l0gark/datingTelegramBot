@@ -251,3 +251,33 @@ func TestUserRepository_UpdateByUserId_ShouldReturnSameErrorOnFailure(t *testing
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestUserRepository_DeleteByUserId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pool, err := pgxmock.NewPool()
+	if err != nil {
+		t.Errorf("error was not expected while creating pool: %s", err.Error())
+		return
+	}
+	defer pool.Close()
+
+	pool.ExpectBegin()
+	pool.ExpectExec("DELETE users ").WithArgs(
+		0,
+	).WillReturnResult(pgxmock.NewResult("DELETE", 1))
+	pool.ExpectCommit()
+
+	//users := NewUserRepository(pool)
+
+	//if err := users.UpdateByUserId(context.Background(), &user); err != nil {
+	//	assert.EqualValues(t, someError, err)
+	//} else {
+	//	t.Errorf("was expecting an error, but there was none")
+	//}
+
+	if err := pool.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}

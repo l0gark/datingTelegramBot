@@ -1,29 +1,32 @@
-package main
+package usecase
 
 import (
 	"context"
+	"github.com/Eretic431/datingTelegramBot/internal"
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"strconv"
 )
 
-func (a *application) handleCommandProfile(ctx context.Context, inputMsg *tgbotapi.Message, user *models.User) (tgbotapi.MessageConfig, error) {
+func (u *Usecase) HandleProfile(
+	ctx context.Context,
+	inputMsg *tgbotapi.Message,
+	user *models.User) (tgbotapi.MessageConfig, error) {
 	user.Stage = 0
-	err := a.users.UpdateByUserId(ctx, user)
+	err := u.users.UpdateByUserId(ctx, user)
 	if err != nil {
-		a.log.Errorf("could not update user with error %e", err)
+		u.log.Errorf("could not update user with error %e", err)
 		return tgbotapi.MessageConfig{}, err
 	}
 
-	outputMsg := tgbotapi.NewMessage(inputMsg.Chat.ID, stages[user.Stage])
+	outputMsg := tgbotapi.NewMessage(inputMsg.Chat.ID, u.stages[user.Stage])
 	if len(user.Name) > 0 {
-		outputMsg.ReplyMarkup = createSkipKeyboardMarkup(user.Name)
+		outputMsg.ReplyMarkup = internal.CreateSkipKeyboardMarkup(user.Name)
 	}
 
 	return outputMsg, err
 }
-
-func (a *application) handleFillingProfile(
+func (u *Usecase) HandleFillingProfile(
 	ctx context.Context,
 	inputText string,
 	chatId int64,
@@ -123,14 +126,14 @@ func (a *application) handleFillingProfile(
 			user.Stage = ProfileStageNone
 		}
 
-		err := a.users.UpdateByUserId(ctx, user)
+		err := u.users.UpdateByUserId(ctx, user)
 		if err != nil {
-			a.log.Errorf("could not update user with error %e", err)
+			u.log.Errorf("could not update user with error %e", err)
 			return tgbotapi.MessageConfig{}, err
 		}
 
 		if user.Stage != ProfileStageNone {
-			text = stages[user.Stage]
+			text = u.stages[user.Stage]
 		}
 	} else {
 		text = "Данные введены некорректно, попробуйте снова."
@@ -138,7 +141,7 @@ func (a *application) handleFillingProfile(
 
 	if user.Stage == ProfileStageNone {
 		photCfg := tgbotapi.NewPhoto(chatId, tgbotapi.FileID(user.Image))
-		photCfg.Caption = createMyProfileCaption(user)
+		photCfg.Caption = internal.CreateMyProfileCaption(user)
 		photCfg.ParseMode = tgbotapi.ModeMarkdown
 		return photCfg, nil
 	}
@@ -146,7 +149,7 @@ func (a *application) handleFillingProfile(
 	outputMsg := tgbotapi.NewMessage(chatId, text)
 
 	if len(skipData) > 0 && skipData != "emptyImage" {
-		outputMsg.ReplyMarkup = createSkipKeyboardMarkup(skipData)
+		outputMsg.ReplyMarkup = internal.CreateSkipKeyboardMarkup(skipData)
 	}
 
 	return outputMsg, nil

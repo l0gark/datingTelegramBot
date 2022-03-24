@@ -1,5 +1,5 @@
 //go:generate mockgen -source user_repository.go -destination mock/user_repository.go -package mock
-package data
+package internal
 
 import (
 	"context"

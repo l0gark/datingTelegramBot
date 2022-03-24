@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func createSkipKeyboardMarkup(data string) tgbotapi.InlineKeyboardMarkup {
+func CreateSkipKeyboardMarkup(data string) tgbotapi.InlineKeyboardMarkup {
 	if len(data) == 0 {
 		data = "-"
 	}
@@ -16,7 +16,7 @@ func createSkipKeyboardMarkup(data string) tgbotapi.InlineKeyboardMarkup {
 	)
 }
 
-func createLikeKeyboardMarkup(toId string) tgbotapi.InlineKeyboardMarkup {
+func CreateLikeKeyboardMarkup(toId string) tgbotapi.InlineKeyboardMarkup {
 	likeData := tgbotapi.NewInlineKeyboardButtonData("❤", "like;"+toId)
 	dislikeData := tgbotapi.NewInlineKeyboardButtonData("➡", "dislike;"+toId)
 
@@ -25,11 +25,11 @@ func createLikeKeyboardMarkup(toId string) tgbotapi.InlineKeyboardMarkup {
 	)
 }
 
-func createMyProfileCaption(user *models.User) string {
-	return createProfileCaption(user) + "\n\nПопробуйте ввести команду /next"
+func CreateMyProfileCaption(user *models.User) string {
+	return CreateProfileCaption(user) + "\n\nПопробуйте ввести команду /next"
 }
 
-func createProfileCaption(user *models.User) string {
+func CreateProfileCaption(user *models.User) string {
 	sex := ""
 	if user.Sex {
 		sex = "Мужчина"
@@ -45,6 +45,6 @@ func createProfileCaption(user *models.User) string {
 	return caption
 }
 
-func createMatchCaption(user *models.User) string {
-	return "Поздравляем! У Вас совпадание с @" + user.Id + "\nМожете связаться в личных сообщениях☺\n\n" + createProfileCaption(user)
+func CreateMatchCaption(user *models.User) string {
+	return "Поздравляем! У Вас совпадание с @" + user.Id + "\nМожете связаться в личных сообщениях☺\n\n" + CreateProfileCaption(user)
 }

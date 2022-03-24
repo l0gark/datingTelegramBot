@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Eretic431/datingTelegramBot/internal"
 	"github.com/Eretic431/datingTelegramBot/internal/data/postgres"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/xlab/closer"
@@ -11,6 +12,7 @@ import (
 
 type application struct {
 	config  *config
+	usecase internal.Usecase
 	log     *zap.SugaredLogger
 	users   *postgres.UserRepository
 	likes   *postgres.LikeRepository

@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"github.com/Eretic431/datingTelegramBot/internal"
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
@@ -14,11 +15,13 @@ type UserRepository struct {
 	DB PgxPoolIface
 }
 
+var _ internal.UsersRepository = &UserRepository{}
+
 func NewUserRepository(DB PgxPoolIface) *UserRepository {
 	return &UserRepository{DB: DB}
 }
 
-func (ur *UserRepository) Add(ctx context.Context, user *models.User) (err error) {
+func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return err
@@ -55,7 +58,7 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) (err error
 		return err
 	}
 
-	return
+	return nil
 }
 
 func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*models.User, error) {
@@ -85,7 +88,7 @@ func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*mode
 	return user, nil
 }
 
-func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User) (err error) {
+func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User) error {
 	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return err
@@ -122,7 +125,7 @@ func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User)
 		return models.ErrNoRecord
 	}
 
-	return
+	return nil
 }
 
 func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) error {

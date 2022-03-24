@@ -1,4 +1,4 @@
-//go:generate mockgen -source user_repository.go -destination mock/user_repository.go -package mock
+//go:generate mockgen -source users_repository.go -destination mock/users_repository.go -package mock
 package internal
 
 import (
@@ -6,7 +6,7 @@ import (
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
 )
 
-type UserRepository interface {
+type UsersRepository interface {
 	Add(context.Context, *models.User) error
 	GetByUserId(context.Context, string) (*models.User, error)
 	UpdateByUserId(context.Context, *models.User) error

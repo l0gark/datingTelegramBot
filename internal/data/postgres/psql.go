@@ -15,6 +15,8 @@ func NewPsqlPool(c *Config) (PgxPoolIface, func(), error) {
 	return pool, pool.Close, nil
 }
 
+var _ PgxPoolIface = &pgxpool.Pool{}
+
 type PgxPoolIface interface {
 	Begin(context.Context) (pgx.Tx, error)
 	Close()

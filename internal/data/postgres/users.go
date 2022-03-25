@@ -61,7 +61,7 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 	return nil
 }
 
-func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*models.User, error) {
+func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (user *models.User, err error) {
 	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*mode
 		}
 	}()
 
-	user := &models.User{}
+	user = &models.User{}
 	query := "SELECT id, name, sex, age, description, city, image, started, stage, chat_id FROM users WHERE id=$1;"
 
 	if err := pgxscan.Get(ctx, tx,
@@ -129,7 +129,8 @@ func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User)
 	}
 
 	if tag.RowsAffected() == 0 {
-		return models.ErrNoRecord
+		err = models.ErrNoRecord
+		return err
 	}
 
 	return nil
@@ -151,7 +152,13 @@ func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) err
 	}()
 
 	query := "DELETE FROM users WHERE id = $1;"
-	if _, err := tx.Exec(ctx, query, userId); err != nil {
+	tag, err := tx.Exec(ctx, query, userId)
+	if err != nil {
+		return err
+	}
+
+	if tag.RowsAffected() == 0 {
+		err = models.ErrNoRecord
 		return err
 	}
 
@@ -192,12 +199,13 @@ func (ur *UserRepository) GetNextUser(ctx context.Context, userId string, sex bo
 		"	LIMIT 1" +
 		");"
 
-	if err := pgxscan.Get(ctx, tx,
+	err = pgxscan.Get(ctx, tx,
 		user,
 		query,
 		userId,
 		sex,
-	); err != nil {
+	)
+	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNoRecord
 		}

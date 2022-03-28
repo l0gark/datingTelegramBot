@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"github.com/Eretic431/datingTelegramBot/internal"
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
@@ -14,20 +15,30 @@ type UserRepository struct {
 	DB PgxPoolIface
 }
 
+var _ internal.UsersRepository = &UserRepository{}
+
 func NewUserRepository(DB PgxPoolIface) *UserRepository {
 	return &UserRepository{DB: DB}
 }
 
 func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
-	conn, err := ur.DB.Acquire(ctx)
+	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer conn.Release()
+
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	query := "INSERT INTO users (id, name, sex, age, description, city, image, started, stage, chat_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, -1, $9);"
 
-	if _, err := conn.Exec(ctx, query,
+	if _, err = tx.Exec(ctx, query,
 		user.Id,
 		user.Name,
 		user.Sex,
@@ -38,7 +49,7 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 		user.Started,
 		user.ChatId,
 	); err != nil {
-		var pgErr *pgconn.PgError
+		pgErr := &pgconn.PgError{}
 
 		if errors.As(err, &pgErr); pgErr.Code == pgerrcode.UniqueViolation {
 			return models.ErrAlreadyExists
@@ -50,22 +61,30 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 	return nil
 }
 
-func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*models.User, error) {
-	conn, err := ur.DB.Acquire(ctx)
+func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (user *models.User, err error) {
+	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	defer conn.Release()
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
-	user := &models.User{}
+	user = &models.User{}
 	query := "SELECT id, name, sex, age, description, city, image, started, stage, chat_id FROM users WHERE id=$1;"
 
-	if err := pgxscan.Get(ctx, conn,
+	if err := pgxscan.Get(ctx, tx,
 		user,
 		query,
 		userId,
 	); err != nil {
+
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNoRecord
 		}
@@ -77,15 +96,23 @@ func (ur *UserRepository) GetByUserId(ctx context.Context, userId string) (*mode
 }
 
 func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User) error {
-	conn, err := ur.DB.Acquire(ctx)
+	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer conn.Release()
+
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	query := "UPDATE users SET name=$2, sex=$3, age=$4, description=$5, city=$6, image=$7, started=$8, stage=$9, chat_id=$10 WHERE id=$1;"
 
-	tag, err := conn.Exec(ctx, query,
+	tag, err := tx.Exec(ctx, query,
 		user.Id,
 		user.Name,
 		user.Sex,
@@ -102,21 +129,36 @@ func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User)
 	}
 
 	if tag.RowsAffected() == 0 {
-		return models.ErrNoRecord
+		err = models.ErrNoRecord
+		return err
 	}
 
 	return nil
 }
 
 func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) error {
-	conn, err := ur.DB.Acquire(ctx)
+	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer conn.Release()
+
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	query := "DELETE FROM users WHERE id = $1;"
-	if _, err := conn.Exec(ctx, query, userId); err != nil {
+	tag, err := tx.Exec(ctx, query, userId)
+	if err != nil {
+		return err
+	}
+
+	if tag.RowsAffected() == 0 {
+		err = models.ErrNoRecord
 		return err
 	}
 
@@ -124,12 +166,19 @@ func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) err
 }
 
 func (ur *UserRepository) GetNextUser(ctx context.Context, userId string, sex bool) (*models.User, error) {
-	conn, err := ur.DB.Acquire(ctx)
+	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	defer conn.Release()
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	user := &models.User{}
 	query := "SELECT id, name, sex, age, description, city, image, started, stage, chat_id FROM users" +
@@ -150,12 +199,13 @@ func (ur *UserRepository) GetNextUser(ctx context.Context, userId string, sex bo
 		"	LIMIT 1" +
 		");"
 
-	if err := pgxscan.Get(ctx, conn,
+	err = pgxscan.Get(ctx, tx,
 		user,
 		query,
 		userId,
 		sex,
-	); err != nil {
+	)
+	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNoRecord
 		}

@@ -8,23 +8,30 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type LikeRepository struct {
-	DB *pgxpool.Pool
+	DB PgxPoolIface
 }
 
 func (lr *LikeRepository) Add(ctx context.Context, like *models.Like) error {
-	conn, err := lr.DB.Acquire(ctx)
+	tx, err := lr.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer conn.Release()
+
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	query := "INSERT INTO likes (from_id, to_id, value) VALUES ($1, $2, $3);"
 
-	if _, err := conn.Exec(ctx, query,
+	if _, err := tx.Exec(ctx, query,
 		like.FromId,
 		like.ToId,
 		like.Value,
@@ -42,17 +49,24 @@ func (lr *LikeRepository) Add(ctx context.Context, like *models.Like) error {
 }
 
 func (lr *LikeRepository) Get(ctx context.Context, userFromId string, userToId string) (*models.Like, error) {
-	conn, err := lr.DB.Acquire(ctx)
+	tx, err := lr.DB.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	defer conn.Release()
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	like := &models.Like{}
 	query := "SELECT id, from_id, to_id, value FROM likes WHERE from_id=$1 AND to_id=$2"
 
-	if err := pgxscan.Get(ctx, conn, like, query, userFromId, userToId); err != nil {
+	if err := pgxscan.Get(ctx, tx, like, query, userFromId, userToId); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNoRecord
 		}
@@ -64,15 +78,23 @@ func (lr *LikeRepository) Get(ctx context.Context, userFromId string, userToId s
 }
 
 func (lr *LikeRepository) Update(ctx context.Context, like *models.Like) error {
-	conn, err := lr.DB.Acquire(ctx)
+	tx, err := lr.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer conn.Release()
+
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	query := "UPDATE likes SET from_id=$2, to_id=$3, value=$4 WHERE id=$1"
 
-	tag, err := conn.Exec(ctx, query,
+	tag, err := tx.Exec(ctx, query,
 		like.Id,
 		like.FromId,
 		like.ToId,
@@ -94,14 +116,22 @@ func (lr *LikeRepository) Update(ctx context.Context, like *models.Like) error {
 }
 
 func (lr *LikeRepository) Delete(ctx context.Context, id int64) error {
-	conn, err := lr.DB.Acquire(ctx)
+	tx, err := lr.DB.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer conn.Release()
+
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	query := "DELETE FROM likes WHERE id = $1"
-	if _, err := conn.Exec(ctx, query, id); err != nil {
+	if _, err := tx.Exec(ctx, query, id); err != nil {
 		return err
 	}
 
@@ -109,12 +139,19 @@ func (lr *LikeRepository) Delete(ctx context.Context, id int64) error {
 }
 
 func (lr *LikeRepository) getNewMatches(ctx context.Context, userId string) ([]models.User, error) {
-	conn, err := lr.DB.Acquire(ctx)
+	tx, err := lr.DB.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	defer conn.Release()
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	var users []models.User
 
@@ -128,7 +165,7 @@ func (lr *LikeRepository) getNewMatches(ctx context.Context, userId string) ([]m
 		"	ORDER BY likes1.id) likes3 ON" +
 		" users.id = likes3.from_id;"
 
-	if err := pgxscan.Select(ctx, conn, users, query, userId); err != nil {
+	if err := pgxscan.Select(ctx, tx, users, query, userId); err != nil {
 		return nil, err
 	}
 

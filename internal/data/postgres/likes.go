@@ -43,7 +43,7 @@ func (lr *LikeRepository) Add(ctx context.Context, like *models.Like) (err error
 		like.ToId,
 		like.Value,
 	); err != nil {
-		var pgErr *pgconn.PgError
+		pgErr := &pgconn.PgError{}
 
 		if errors.As(err, &pgErr); pgErr.Code == pgerrcode.UniqueViolation {
 			return models.ErrAlreadyExists
@@ -55,7 +55,7 @@ func (lr *LikeRepository) Add(ctx context.Context, like *models.Like) (err error
 	return nil
 }
 
-func (lr *LikeRepository) Get(ctx context.Context, userFromId string, userToId string) (*models.Like, error) {
+func (lr *LikeRepository) Get(ctx context.Context, userFromId string, userToId string) (like *models.Like, err error) {
 	tx, err := lr.DB.Begin(ctx)
 	if err != nil {
 		return nil, err
@@ -70,7 +70,7 @@ func (lr *LikeRepository) Get(ctx context.Context, userFromId string, userToId s
 		}
 	}()
 
-	like := &models.Like{}
+	like = &models.Like{}
 	query := "SELECT id, from_id, to_id, value FROM likes WHERE from_id=$1 AND to_id=$2"
 
 	if err := pgxscan.Get(ctx, tx, like, query, userFromId, userToId); err != nil {

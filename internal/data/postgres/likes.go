@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"github.com/Eretic431/datingTelegramBot/internal"
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
@@ -14,7 +15,13 @@ type LikeRepository struct {
 	DB PgxPoolIface
 }
 
-func (lr *LikeRepository) Add(ctx context.Context, like *models.Like) error {
+var _ internal.LikesRepository = &LikeRepository{}
+
+func NewLikeRepository(DB PgxPoolIface) *LikeRepository {
+	return &LikeRepository{DB: DB}
+}
+
+func (lr *LikeRepository) Add(ctx context.Context, like *models.Like) (err error) {
 	tx, err := lr.DB.Begin(ctx)
 	if err != nil {
 		return err
@@ -138,7 +145,7 @@ func (lr *LikeRepository) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (lr *LikeRepository) getNewMatches(ctx context.Context, userId string) ([]models.User, error) {
+func (lr *LikeRepository) GetNewMatches(ctx context.Context, userId string) ([]models.User, error) {
 	tx, err := lr.DB.Begin(ctx)
 	if err != nil {
 		return nil, err

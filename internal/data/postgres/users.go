@@ -136,7 +136,7 @@ func (ur *UserRepository) UpdateByUserId(ctx context.Context, user *models.User)
 	return nil
 }
 
-func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) error {
+func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) (err error) {
 	tx, err := ur.DB.Begin(ctx)
 	if err != nil {
 		return err
@@ -158,8 +158,7 @@ func (ur *UserRepository) DeleteByUserId(ctx context.Context, userId string) err
 	}
 
 	if tag.RowsAffected() == 0 {
-		err = models.ErrNoRecord
-		return err
+		return models.ErrNoRecord
 	}
 
 	return nil

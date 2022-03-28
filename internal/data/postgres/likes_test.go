@@ -321,3 +321,98 @@ func TestUserRepository_Update_ShouldReturnSameErrorOnFailure(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestLikeRepository_Delete(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pool, err := pgxmock.NewPool()
+	if err != nil {
+		t.Errorf("error was not expected while creating pool: %s", err.Error())
+		return
+	}
+	defer pool.Close()
+
+	var likeId int64 = 1
+
+	pool.ExpectBegin()
+	pool.ExpectExec("DELETE FROM likes ").WithArgs(
+		likeId,
+	).WillReturnResult(pgxmock.NewResult("DELETE", 1))
+	pool.ExpectCommit()
+
+	likes := NewLikeRepository(pool)
+
+	if err := likes.Delete(context.Background(), likeId); err != nil {
+		t.Errorf("error was not expected while deleting like: %s", err.Error())
+	}
+
+	if err := pool.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestLikeRepository_Delete_ShouldReturnSameErrorOnFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pool, err := pgxmock.NewPool()
+	if err != nil {
+		t.Errorf("error was not expected while creating pool: %s", err.Error())
+		return
+	}
+	defer pool.Close()
+
+	var likeId int64 = 1
+	someError := errors.New("some error")
+
+	pool.ExpectBegin()
+	pool.ExpectExec("DELETE FROM likes ").WithArgs(
+		likeId,
+	).WillReturnError(someError)
+	pool.ExpectRollback()
+
+	likes := NewLikeRepository(pool)
+
+	if err := likes.Delete(context.Background(), likeId); err != nil {
+		assert.EqualValues(t, someError, err)
+	} else {
+		t.Errorf("was expecting an error, but there was none")
+	}
+
+	if err := pool.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestLikeRepository_Delete_ShouldReturnErrNoRecordIfRawsNoAffected(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pool, err := pgxmock.NewPool()
+	if err != nil {
+		t.Errorf("error was not expected while creating pool: %s", err.Error())
+		return
+	}
+	defer pool.Close()
+
+	var likeId int64 = 1
+
+	pool.ExpectBegin()
+	pool.ExpectExec("DELETE FROM likes ").WithArgs(
+		likeId,
+	).WillReturnResult(pgxmock.NewResult("DELETE", 0))
+	pool.ExpectRollback()
+
+	likes := NewLikeRepository(pool)
+
+	if err := likes.Delete(context.Background(), likeId); err != nil {
+		assert.EqualValues(t, models.ErrNoRecord, err)
+	} else {
+		t.Errorf("was expecting an error, but there was none")
+	}
+
+	if err := pool.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}

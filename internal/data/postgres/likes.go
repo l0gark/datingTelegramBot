@@ -123,7 +123,7 @@ func (lr *LikeRepository) Update(ctx context.Context, like *models.Like) (err er
 	return nil
 }
 
-func (lr *LikeRepository) Delete(ctx context.Context, id int64) error {
+func (lr *LikeRepository) Delete(ctx context.Context, id int64) (err error) {
 	tx, err := lr.DB.Begin(ctx)
 	if err != nil {
 		return err
@@ -138,9 +138,15 @@ func (lr *LikeRepository) Delete(ctx context.Context, id int64) error {
 		}
 	}()
 
-	query := "DELETE FROM likes WHERE id = $1"
-	if _, err := tx.Exec(ctx, query, id); err != nil {
+	query := "DELETE FROM likes WHERE id = $1;"
+	tag, err := tx.Exec(ctx, query, id)
+
+	if err != nil {
 		return err
+	}
+
+	if tag.RowsAffected() == 0 {
+		return models.ErrNoRecord
 	}
 
 	return nil

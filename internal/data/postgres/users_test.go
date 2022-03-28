@@ -273,7 +273,7 @@ func TestUserRepository_DeleteByUserId(t *testing.T) {
 	users := NewUserRepository(pool)
 
 	if err := users.DeleteByUserId(context.Background(), "1"); err != nil {
-		t.Errorf("error was not expected while updating user: %s", err.Error())
+		t.Errorf("error was not expected while deleting user: %s", err.Error())
 	}
 
 	if err := pool.ExpectationsWereMet(); err != nil {
@@ -281,7 +281,7 @@ func TestUserRepository_DeleteByUserId(t *testing.T) {
 	}
 }
 
-func TestUserRepository_DeleteByUserIdShouldReturnError(t *testing.T) {
+func TestUserRepository_DeleteByUserId_ShouldReturnError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -313,7 +313,7 @@ func TestUserRepository_DeleteByUserIdShouldReturnError(t *testing.T) {
 	}
 }
 
-func TestUserRepository_DeleteByUserIdShouldReturnErrNoRecordIfRawsNoAffected(t *testing.T) {
+func TestUserRepository_DeleteByUserId_ShouldReturnErrNoRecordIfRawsNoAffected(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -327,7 +327,7 @@ func TestUserRepository_DeleteByUserIdShouldReturnErrNoRecordIfRawsNoAffected(t 
 	pool.ExpectBegin()
 	pool.ExpectExec("DELETE FROM users ").WithArgs(
 		"1",
-	).WillReturnError(models.ErrNoRecord)
+	).WillReturnResult(pgxmock.NewResult("DELETE", 0))
 	pool.ExpectRollback()
 
 	users := NewUserRepository(pool)
@@ -400,7 +400,7 @@ func TestUserRepository_GetByUserIdShouldReturnRaws(t *testing.T) {
 
 	actualUser, err := users.GetByUserId(context.Background(), "1")
 	if err != nil {
-		t.Errorf("error was not expected while updating user: %s", err.Error())
+		t.Errorf("error was not expected while getting user: %s", err.Error())
 	}
 
 	assert.EqualValues(t, user, actualUser)

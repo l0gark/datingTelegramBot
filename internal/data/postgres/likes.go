@@ -84,7 +84,7 @@ func (lr *LikeRepository) Get(ctx context.Context, userFromId string, userToId s
 	return like, nil
 }
 
-func (lr *LikeRepository) Update(ctx context.Context, like *models.Like) error {
+func (lr *LikeRepository) Update(ctx context.Context, like *models.Like) (err error) {
 	tx, err := lr.DB.Begin(ctx)
 	if err != nil {
 		return err

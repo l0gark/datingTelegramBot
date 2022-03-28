@@ -107,8 +107,9 @@ func (lr *LikeRepository) Update(ctx context.Context, like *models.Like) (err er
 		like.ToId,
 		like.Value,
 	)
+
 	if err != nil {
-		var pgErr *pgconn.PgError
+		pgErr := &pgconn.PgError{}
 		if errors.As(err, &pgErr); pgErr.Code == pgerrcode.UniqueViolation {
 			return models.ErrAlreadyExists
 		}

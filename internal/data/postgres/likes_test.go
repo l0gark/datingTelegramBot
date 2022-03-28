@@ -201,3 +201,123 @@ func TestLikeRepository_Get_ShouldReturnErrNoRecordIfUserIsNotExists(t *testing.
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestUserRepository_Update(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pool, err := pgxmock.NewPool()
+	if err != nil {
+		t.Errorf("error was not expected while creating pool: %s", err.Error())
+		return
+	}
+	defer pool.Close()
+
+	like := &models.Like{
+		Id:     1,
+		FromId: "id1",
+		ToId:   "id2",
+		Value:  true,
+	}
+
+	pool.ExpectBegin()
+	pool.ExpectExec("UPDATE likes ").WithArgs(
+		like.Id,
+		like.FromId,
+		like.ToId,
+		like.Value,
+	).WillReturnResult(pgxmock.NewResult("UPDATE", 1))
+	pool.ExpectCommit()
+
+	likes := NewLikeRepository(pool)
+
+	if err := likes.Update(context.Background(), like); err != nil {
+		t.Errorf("error was not expected while updating like: %s", err.Error())
+	}
+
+	if err := pool.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestUserRepository_Update_ShouldReturnErrNoRecordOnEmptyRawsAffected(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pool, err := pgxmock.NewPool()
+	if err != nil {
+		t.Errorf("error was not expected while creating pool: %s", err.Error())
+		return
+	}
+	defer pool.Close()
+
+	like := &models.Like{
+		Id:     1,
+		FromId: "id1",
+		ToId:   "id2",
+		Value:  true,
+	}
+
+	pool.ExpectBegin()
+	pool.ExpectExec("UPDATE likes ").WithArgs(
+		like.Id,
+		like.FromId,
+		like.ToId,
+		like.Value,
+	).WillReturnResult(pgxmock.NewResult("UPDATE", 0))
+	pool.ExpectRollback()
+
+	likes := NewLikeRepository(pool)
+
+	if err := likes.Update(context.Background(), like); err != nil {
+		assert.EqualValues(t, models.ErrNoRecord, err)
+	} else {
+		t.Errorf("was expecting an error, but there was none")
+	}
+
+	if err := pool.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestUserRepository_Update_ShouldReturnSameErrorOnFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pool, err := pgxmock.NewPool()
+	if err != nil {
+		t.Errorf("error was not expected while creating pool: %s", err.Error())
+		return
+	}
+	defer pool.Close()
+
+	like := &models.Like{
+		Id:     1,
+		FromId: "id1",
+		ToId:   "id2",
+		Value:  true,
+	}
+
+	someError := errors.New("some error")
+
+	pool.ExpectBegin()
+	pool.ExpectExec("UPDATE likes ").WithArgs(
+		like.Id,
+		like.FromId,
+		like.ToId,
+		like.Value,
+	).WillReturnError(someError)
+	pool.ExpectRollback()
+
+	likes := NewLikeRepository(pool)
+
+	if err := likes.Update(context.Background(), like); err != nil {
+		assert.EqualValues(t, someError, err)
+	} else {
+		t.Errorf("was expecting an error, but there was none")
+	}
+
+	if err := pool.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}

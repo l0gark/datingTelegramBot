@@ -78,21 +78,6 @@ func (mr *MockLikesRepositoryMockRecorder) Get(arg0, arg1, arg2 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockLikesRepository)(nil).Get), arg0, arg1, arg2)
 }
 
-// GetNewMatches mocks base method.
-func (m *MockLikesRepository) GetNewMatches(arg0 context.Context, arg1 string) ([]models.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNewMatches", arg0, arg1)
-	ret0, _ := ret[0].([]models.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetNewMatches indicates an expected call of GetNewMatches.
-func (mr *MockLikesRepositoryMockRecorder) GetNewMatches(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNewMatches", reflect.TypeOf((*MockLikesRepository)(nil).GetNewMatches), arg0, arg1)
-}
-
 // Update mocks base method.
 func (m *MockLikesRepository) Update(arg0 context.Context, arg1 *models.Like) error {
 	m.ctrl.T.Helper()

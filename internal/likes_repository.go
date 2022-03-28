@@ -11,5 +11,4 @@ type LikesRepository interface {
 	Get(context.Context, string, string) (*models.Like, error)
 	Update(context.Context, *models.Like) error
 	Delete(context.Context, int64) error
-	GetNewMatches(context.Context, string) ([]models.User, error)
 }

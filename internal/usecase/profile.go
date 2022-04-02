@@ -24,8 +24,9 @@ func (u *Usecase) HandleProfile(
 		outputMsg.ReplyMarkup = internal.CreateSkipKeyboardMarkup(user.Name)
 	}
 
-	return outputMsg, err
+	return outputMsg, nil
 }
+
 func (u *Usecase) HandleFillingProfile(
 	ctx context.Context,
 	inputText string,
@@ -119,6 +120,8 @@ func (u *Usecase) HandleFillingProfile(
 		skipData = ""
 
 	}
+
+	u.log.Infow("LOL", "correct", correct)
 	if correct {
 		if user.Stage < MaxProfileStage {
 			user.Stage += 1
@@ -140,10 +143,10 @@ func (u *Usecase) HandleFillingProfile(
 	}
 
 	if user.Stage == ProfileStageNone {
-		photCfg := tgbotapi.NewPhoto(chatId, tgbotapi.FileID(user.Image))
-		photCfg.Caption = internal.CreateMyProfileCaption(user)
-		photCfg.ParseMode = tgbotapi.ModeMarkdown
-		return photCfg, nil
+		photoCfg := tgbotapi.NewPhoto(chatId, tgbotapi.FileID(user.Image))
+		photoCfg.Caption = internal.CreateMyProfileCaption(user)
+		photoCfg.ParseMode = tgbotapi.ModeMarkdown
+		return photoCfg, nil
 	}
 
 	outputMsg := tgbotapi.NewMessage(chatId, text)

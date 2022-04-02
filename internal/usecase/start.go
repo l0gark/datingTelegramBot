@@ -26,16 +26,11 @@ func (u *Usecase) HandleStart(
 		)
 
 		user := &models.User{
-			Id:          inputMsg.From.UserName,
-			Name:        "",
-			Sex:         false,
-			Age:         0,
-			Description: "",
-			City:        "",
-			Image:       "",
-			Started:     true,
-			Stage:       ProfileStageNone,
-			ChatId:      inputMsg.Chat.ID,
+			Id:      inputMsg.From.UserName,
+			Sex:     false,
+			Started: true,
+			Stage:   ProfileStageNone,
+			ChatId:  inputMsg.Chat.ID,
 		}
 
 		err := u.users.UpdateByUserId(ctx, user)
@@ -56,16 +51,11 @@ func (u *Usecase) IsStarted(ctx context.Context, inputMsg *tgbotapi.Message) (bo
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			user := &models.User{
-				Id:          inputMsg.From.UserName,
-				Name:        "",
-				Sex:         false,
-				Age:         0,
-				Description: "",
-				City:        "",
-				Image:       "",
-				Started:     false,
-				Stage:       ProfileStageNone,
-				ChatId:      inputMsg.Chat.ID,
+				Id:      inputMsg.From.UserName,
+				Sex:     false,
+				Started: false,
+				Stage:   ProfileStageNone,
+				ChatId:  inputMsg.Chat.ID,
 			}
 
 			err := u.users.Add(ctx, user)

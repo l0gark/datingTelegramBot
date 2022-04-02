@@ -8,6 +8,7 @@ package main
 
 import (
 	"github.com/Eretic431/datingTelegramBot/internal/data/postgres"
+	"github.com/Eretic431/datingTelegramBot/internal/usecase"
 )
 
 // Injectors from wire.go:
@@ -27,21 +28,25 @@ func initApp() (*application, func(), error) {
 		cleanup()
 		return nil, nil, err
 	}
-	userRepository := &postgres.UserRepository{
-		DB: pgxPoolIface,
-	}
-	likeRepository := &postgres.LikeRepository{
-		DB: pgxPoolIface,
-	}
+	usersRepository := postgres.NewUserRepository(pgxPoolIface)
+	likesRepository := postgres.NewLikeRepository(pgxPoolIface)
 	botAPI, err := newTgBot(mainConfig)
 	if err != nil {
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
+	internalUsecase := usecase.NewUsecase(usersRepository, likesRepository, botAPI, sugaredLogger)
+	userRepository := &postgres.UserRepository{
+		DB: pgxPoolIface,
+	}
+	likeRepository := &postgres.LikeRepository{
+		DB: pgxPoolIface,
+	}
 	updatesChannel := newTgBotUpdatesChan(botAPI)
 	mainApplication := &application{
 		config:  mainConfig,
+		usecase: internalUsecase,
 		log:     sugaredLogger,
 		users:   userRepository,
 		likes:   likeRepository,

@@ -11,6 +11,8 @@ require (
 	github.com/jackc/pgconn v1.11.0
 	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451
 	github.com/jackc/pgx/v4 v4.15.0
+	github.com/pashagolub/pgxmock v1.4.4
+	github.com/stretchr/testify v1.7.0
 	github.com/xlab/closer v0.0.0-20190328110542-03326addb7c2
 	go.uber.org/zap v1.21.0
 )
@@ -27,7 +29,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
-	github.com/stretchr/testify v1.7.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871 // indirect

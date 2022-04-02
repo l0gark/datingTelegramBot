@@ -2,14 +2,13 @@ package usecase
 
 import (
 	"github.com/Eretic431/datingTelegramBot/internal"
-	"github.com/Eretic431/datingTelegramBot/internal/data/postgres"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"go.uber.org/zap"
 )
 
 type Usecase struct {
-	users  internal.UserRepository
-	likes  *postgres.LikeRepository
+	users  internal.UsersRepository
+	likes  internal.LikesRepository
 	bot    *tgbotapi.BotAPI
 	log    *zap.SugaredLogger
 	stages map[int]string
@@ -18,10 +17,10 @@ type Usecase struct {
 var _ internal.Usecase = &Usecase{}
 
 func NewUsecase(
-	users internal.UserRepository,
-	likes *postgres.LikeRepository,
+	users internal.UsersRepository,
+	likes internal.LikesRepository,
 	bot *tgbotapi.BotAPI,
-	log *zap.SugaredLogger) *Usecase {
+	log *zap.SugaredLogger) internal.Usecase {
 	stages := make(map[int]string, 6)
 
 	stages[0] = "Как Вас зовут?"

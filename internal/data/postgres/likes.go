@@ -17,7 +17,7 @@ type LikeRepository struct {
 
 var _ internal.LikesRepository = &LikeRepository{}
 
-func NewLikeRepository(DB PgxPoolIface) *LikeRepository {
+func NewLikeRepository(DB PgxPoolIface) internal.LikesRepository {
 	return &LikeRepository{DB: DB}
 }
 

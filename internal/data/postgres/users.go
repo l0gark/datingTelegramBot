@@ -17,7 +17,7 @@ type UserRepository struct {
 
 var _ internal.UsersRepository = &UserRepository{}
 
-func NewUserRepository(DB PgxPoolIface) *UserRepository {
+func NewUserRepository(DB PgxPoolIface) internal.UsersRepository {
 	return &UserRepository{DB: DB}
 }
 

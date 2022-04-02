@@ -3,15 +3,12 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/Eretic431/datingTelegramBot/internal"
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
+	"github.com/Eretic431/datingTelegramBot/internal/usecase"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"strings"
-)
-
-const (
-	MaxProfileStage  = 5
-	ProfileStageNone = -1
 )
 
 var (
@@ -23,13 +20,6 @@ func (a *application) handleUpdates() {
 	commands["start"] = struct{}{}
 	commands["profile"] = struct{}{}
 	commands["next"] = struct{}{}
-
-	stages[0] = "Как Вас зовут?"
-	stages[1] = "Сколько Вам лет?"
-	stages[2] = "Из какого Вы города?"
-	stages[3] = "Введите краткое описание своего профиля."
-	stages[4] = "Пришлите фотографию, которая будет показываться другим пользователям в ленте."
-	stages[5] = "Какого Вы пола? М/Ж"
 
 	for update := range a.updates {
 		ctx := context.Background()
@@ -62,7 +52,7 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 		a.log.Infof("receive file with id = %s", photo)
 	}
 
-	if user != nil && user.Stage != ProfileStageNone {
+	if user != nil && user.Stage != usecase.ProfileStageNone {
 		fileId := "-"
 		if len(msg.Photo) > 0 && msg.Photo[0].FileID != "" {
 			fileId = msg.Photo[0].FileID
@@ -71,7 +61,7 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 		if msg.IsCommand() {
 			outputMsg = tgbotapi.NewMessage(msg.Chat.ID, "Пожалуйста дозаполните анкету.")
 		} else {
-			outputMsg, err = a.handleFillingProfile(ctx, msg.Text, msg.Chat.ID, fileId, user)
+			outputMsg, err = a.usecase.HandleFillingProfile(ctx, msg.Text, msg.Chat.ID, fileId, user)
 			if err != nil {
 				return
 			}
@@ -79,7 +69,7 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 	} else {
 		_, ok := commands[msg.Command()]
 		if ok {
-			started, err := a.isStarted(ctx, msg)
+			started, err := a.usecase.IsStarted(ctx, msg)
 			if err != nil {
 				return
 			}
@@ -88,17 +78,17 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 				var err error
 				switch msg.Command() {
 				case "start":
-					outputMsg, err = a.handleCommandStart(ctx, msg, started)
+					outputMsg, err = a.usecase.HandleStart(ctx, msg, started)
 				case "profile":
-					outputMsg, err = a.handleCommandProfile(ctx, msg, user)
+					outputMsg, err = a.usecase.HandleProfile(ctx, msg, user)
 				case "next":
-					outputMsg, err = a.handleCommandNext(ctx, msg.Chat.ID, user)
+					outputMsg, err = a.usecase.HandleCommandNext(ctx, msg.Chat.ID, user)
 				}
 				if err != nil {
 					return
 				}
 			} else {
-				outputMsg, err = a.handleCommandStart(ctx, msg, started)
+				outputMsg, err = a.usecase.HandleStart(ctx, msg, started)
 				if err != nil {
 					return
 				}
@@ -173,7 +163,7 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 
 				ava1 := tgbotapi.FileID(user.Image)
 				match2Message := tgbotapi.NewPhoto(user2.ChatId, ava1)
-				match2Message.Caption = createMatchCaption(user)
+				match2Message.Caption = internal.CreateMatchCaption(user)
 				match2Message.ParseMode = tgbotapi.ModeMarkdown
 
 				if _, err := a.bot.Send(match2Message); err != nil {
@@ -183,7 +173,7 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 
 				ava2 := tgbotapi.FileID(user2.Image)
 				match1Message := tgbotapi.NewPhoto(user.ChatId, ava2)
-				match1Message.Caption = createMatchCaption(user2)
+				match1Message.Caption = internal.CreateMatchCaption(user2)
 				match1Message.ParseMode = tgbotapi.ModeMarkdown
 
 				if _, err := a.bot.Send(match1Message); err != nil {
@@ -193,13 +183,13 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 			}
 		}
 
-		msg, err = a.handleCommandNext(ctx, cq.Message.Chat.ID, user)
+		msg, err = a.usecase.HandleCommandNext(ctx, cq.Message.Chat.ID, user)
 		if err != nil {
 			return
 		}
 
 	} else {
-		msg, err = a.handleFillingProfile(ctx, cq.Data, cq.Message.Chat.ID, user.Image, user)
+		msg, err = a.usecase.HandleFillingProfile(ctx, cq.Data, cq.Message.Chat.ID, user.Image, user)
 	}
 
 	if err != nil {

@@ -28,3 +28,11 @@ migrate_force:
 
 migrate_create:
 	migrate create -seq -ext=.sql -dir=./migrations ${NAME}
+
+test-coverage:
+	mkdir -p "coverage"
+	go test -coverprofile=coverage/coverage.out ./...
+	go tool cover -html coverage/coverage.out -o coverage/coverage.html
+	rm coverage/coverage.out
+	# See http://inglorion.net/software/detach/
+	detach xdg-open coverage/coverage.html

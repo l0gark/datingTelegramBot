@@ -23,27 +23,39 @@ func (a *application) handleUpdates() {
 
 	for update := range a.updates {
 		ctx := context.Background()
+		var outputMessages []tgbotapi.Chattable
+		var err error
+
 		if update.Message != nil {
-			user, err := a.users.GetByUserId(ctx, update.Message.From.UserName)
-			if err != nil {
-				if !errors.Is(err, models.ErrNoRecord) {
-					continue
-				}
-			}
-			a.handleMessages(ctx, update.Message, user)
+			outputMessages, err = a.handleMessage(ctx, update.Message)
 		} else if update.CallbackQuery != nil {
-			user, err := a.users.GetByUserId(ctx, update.CallbackQuery.From.UserName)
-			if err != nil {
-				if !errors.Is(err, models.ErrNoRecord) {
-					continue
+			outputMessages, err = a.handleCallbackQuery(ctx, update.CallbackQuery)
+		}
+
+		if err != nil {
+			continue
+		}
+
+		for _, message := range outputMessages {
+			if message != nil {
+				if _, err := a.bot.Send(message); err != nil {
+					a.log.Warnf("could not send message with error %e", err)
+					return
 				}
 			}
-			a.handleCallbackQueries(ctx, update.CallbackQuery, user)
 		}
 	}
 }
 
-func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message, user *models.User) {
+func (a *application) handleMessage(ctx context.Context, msg *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
+	user, err := a.users.GetByUserId(ctx, msg.From.UserName)
+	if err != nil && !errors.Is(err, models.ErrNoRecord) {
+		return nil, err
+	}
+	return a.handleUserMessage(ctx, msg, user)
+}
+
+func (a *application) handleUserMessage(ctx context.Context, msg *tgbotapi.Message, user *models.User) ([]tgbotapi.Chattable, error) {
 	var outputMsg tgbotapi.Chattable
 	var err error
 
@@ -63,7 +75,7 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 		} else {
 			outputMsg, err = a.usecase.HandleFillingProfile(ctx, msg.Text, msg.Chat.ID, fileId, user)
 			if err != nil {
-				return
+				return nil, err
 			}
 		}
 	} else {
@@ -71,7 +83,7 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 		if ok {
 			started, err := a.usecase.IsStarted(ctx, msg)
 			if err != nil {
-				return
+				return nil, err
 			}
 
 			if started {
@@ -85,12 +97,12 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 					outputMsg, err = a.usecase.HandleCommandNext(ctx, msg.Chat.ID, user)
 				}
 				if err != nil {
-					return
+					return nil, err
 				}
 			} else {
 				outputMsg, err = a.usecase.HandleStart(ctx, msg, started)
 				if err != nil {
-					return
+					return nil, err
 				}
 			}
 		} else {
@@ -98,17 +110,22 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 		}
 	}
 
-	if _, err := a.bot.Send(outputMsg); err != nil {
-		a.log.Warnf("could not send message with error %e", err)
-		return
-	}
+	return []tgbotapi.Chattable{outputMsg}, nil
 }
 
-func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.CallbackQuery, user *models.User) {
+func (a *application) handleCallbackQuery(ctx context.Context, cq *tgbotapi.CallbackQuery) ([]tgbotapi.Chattable, error) {
+	user, err := a.users.GetByUserId(ctx, cq.From.UserName)
+	if err != nil && !errors.Is(err, models.ErrNoRecord) {
+		return nil, err
+	}
+	return a.handleUserCallbackQuery(ctx, cq, user)
+}
+
+func (a *application) handleUserCallbackQuery(ctx context.Context, cq *tgbotapi.CallbackQuery, user *models.User) ([]tgbotapi.Chattable, error) {
 	callback := tgbotapi.NewCallback(cq.ID, cq.Data)
 	if _, err := a.bot.Request(callback); err != nil {
 		a.log.Errorf("could not request callback with error %e", err)
-		return
+		return nil, err
 	}
 
 	var msg tgbotapi.Chattable
@@ -131,18 +148,18 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 
 				if err != nil {
 					a.log.Errorf("could not insert like with error %e", err)
-					return
+					return nil, err
 				}
 			} else {
 				a.log.Errorf("could not get like with error %e", err)
-				return
+				return nil, err
 			}
 		} else {
 			oldLike.Value = likeValue
 			err := a.likes.Update(ctx, oldLike)
 			if err != nil {
 				a.log.Errorf("could not update like with error %e", err)
-				return
+				return nil, err
 			}
 		}
 
@@ -152,13 +169,13 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 			if err != nil {
 				if !errors.Is(err, models.ErrNoRecord) {
 					a.log.Errorf("could not get reverse like with error %e", err)
-					return
+					return nil, err
 				}
 			} else if reverseLike != nil && reverseLike.Value {
 				user2, err := a.users.GetByUserId(ctx, reverseLike.FromId)
 				if err != nil {
 					a.log.Errorf("could not get user with error %e", err)
-					return
+					return nil, err
 				}
 
 				ava1 := tgbotapi.FileID(user.Image)
@@ -166,26 +183,18 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 				match2Message.Caption = internal.CreateMatchCaption(user)
 				match2Message.ParseMode = tgbotapi.ModeMarkdown
 
-				if _, err := a.bot.Send(match2Message); err != nil {
-					a.log.Errorf("could not send message with error %e", err)
-					return
-				}
-
 				ava2 := tgbotapi.FileID(user2.Image)
 				match1Message := tgbotapi.NewPhoto(user.ChatId, ava2)
 				match1Message.Caption = internal.CreateMatchCaption(user2)
 				match1Message.ParseMode = tgbotapi.ModeMarkdown
 
-				if _, err := a.bot.Send(match1Message); err != nil {
-					a.log.Errorf("could not send message with error %e", err)
-					return
-				}
+				return []tgbotapi.Chattable{match2Message, match1Message}, nil
 			}
 		}
 
 		msg, err = a.usecase.HandleCommandNext(ctx, cq.Message.Chat.ID, user)
 		if err != nil {
-			return
+			return nil, err
 		}
 
 	} else {
@@ -194,12 +203,10 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 
 	if err != nil {
 		a.log.Errorf("could not handle profile filling with error %e", err)
-		return
+		return nil, err
 	}
-	if _, err := a.bot.Send(msg); err != nil {
-		a.log.Errorf("could not send message with error %e", err)
-		return
-	}
+
+	return []tgbotapi.Chattable{msg}, nil
 }
 
 func (a *application) handleUndefinedMessage(inputMsg *tgbotapi.Message) tgbotapi.MessageConfig {

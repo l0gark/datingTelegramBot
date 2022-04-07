@@ -19,7 +19,7 @@ func (u *Usecase) HandleProfile(
 		return tgbotapi.MessageConfig{}, err
 	}
 
-	outputMsg := tgbotapi.NewMessage(inputMsg.Chat.ID, u.stages[user.Stage])
+	outputMsg := tgbotapi.NewMessage(inputMsg.Chat.ID, u.Stages[user.Stage])
 	if len(user.Name) > 0 {
 		outputMsg.ReplyMarkup = internal.CreateSkipKeyboardMarkup(user.Name)
 	}
@@ -136,7 +136,7 @@ func (u *Usecase) HandleFillingProfile(
 		}
 
 		if user.Stage != ProfileStageNone {
-			text = u.stages[user.Stage]
+			text = u.Stages[user.Stage]
 		}
 	} else {
 		text = "Данные введены некорректно, попробуйте снова."

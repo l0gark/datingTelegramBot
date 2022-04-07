@@ -122,11 +122,11 @@ func (a *application) handleCallbackQuery(ctx context.Context, cq *tgbotapi.Call
 }
 
 func (a *application) handleUserCallbackQuery(ctx context.Context, cq *tgbotapi.CallbackQuery, user *models.User) ([]tgbotapi.Chattable, error) {
-	callback := tgbotapi.NewCallback(cq.ID, cq.Data)
-	if _, err := a.bot.Request(callback); err != nil {
-		a.log.Errorf("could not request callback with error %e", err)
-		return nil, err
-	}
+	//callback := tgbotapi.NewCallback(cq.ID, cq.Data)
+	//if _, err := a.bot.Request(callback); err != nil {
+	//	a.log.Errorf("could not request callback with error %e", err)
+	//	return nil, err
+	//}
 
 	var msg tgbotapi.Chattable
 	var err error

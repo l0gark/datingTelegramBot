@@ -124,6 +124,32 @@ func Test_Scenario4(t *testing.T) {
 	assert.Equal(t, expected, resp.Text)
 }
 
+func Test_Scenario5(t *testing.T) {
+	app := newTestApp()
+	_ = refreshUsersTable()
+
+	ctx := context.Background()
+	user1 := &models.User{
+		Name:        "Masha",
+		Sex:         false,
+		Age:         20,
+		Description: "haha",
+		City:        "test",
+		Image:       "hardcoded",
+		Started:     true,
+		Stage:       -1,
+		ChatId:      123,
+	}
+	_ = app.users.Add(ctx, user1)
+
+	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
+	chattable, _ := app.handleMessage(ctx, msg)
+	resp := chattable[0].(*tgbotapi.MessageConfig)
+
+	expected := app.usecase.(*usecase.Usecase).Stages[0]
+	assert.Equal(t, expected, resp.Text)
+}
+
 func Test_Scenario6(t *testing.T) {
 	app := newTestApp()
 	_ = refreshUsersTable()
@@ -480,4 +506,3 @@ func Test_Scenario15(t *testing.T) {
 
 	assert.Equal(t, expected, resp.Text)
 }
-

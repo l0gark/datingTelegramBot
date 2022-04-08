@@ -373,7 +373,7 @@ func TestUserRepository_GetByUserIdShouldReturnErrNoRecordIfUserIsNotExists(t *t
 	}
 }
 
-func TestUserRepository_GetByUserIdShouldReturnRaws(t *testing.T) {
+func TestUserRepository_GetByUserIdShouldReturnRows(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -410,7 +410,42 @@ func TestUserRepository_GetByUserIdShouldReturnRaws(t *testing.T) {
 	}
 }
 
-func TestUserRepository_GetNextUserShouldReturnErrNoRecordNoRaws(t *testing.T) {
+func TestUserRepository_GetByUserId_ShouldReturnSameErrorOnFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pool, err := pgxmock.NewPool()
+	if err != nil {
+		t.Errorf("error was not expected while creating pool: %s", err.Error())
+		return
+	}
+	defer pool.Close()
+
+	user := &models.User{
+		Id: "1",
+	}
+
+	expectedErr := errors.New("some err")
+
+	pool.ExpectBegin()
+	pool.ExpectQuery("^SELECT (.+) FROM users ").WithArgs(
+		user.Id,
+	).WillReturnError(expectedErr)
+	pool.ExpectRollback()
+
+	users := NewUserRepository(pool)
+
+	actualUser, err := users.GetByUserId(context.Background(), "1")
+	assert.NotNil(t, err)
+	assert.True(t, errors.Is(err, expectedErr))
+	assert.Nil(t, actualUser)
+
+	if err := pool.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestUserRepository_GetNextUser_ShouldReturnErrNoRecordNoRows(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -441,7 +476,39 @@ func TestUserRepository_GetNextUserShouldReturnErrNoRecordNoRaws(t *testing.T) {
 	}
 }
 
-func TestUserRepository_GetNextUserShouldReturnRaws(t *testing.T) {
+func TestUserRepository_GetNextUser_ShouldReturnSameErrOnFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pool, err := pgxmock.NewPool()
+	if err != nil {
+		t.Errorf("error was not expected while creating pool: %s", err.Error())
+		return
+	}
+	defer pool.Close()
+
+	expectedErr := errors.New("some err")
+
+	pool.ExpectBegin()
+	pool.ExpectQuery("^SELECT (.+) FROM users ").WithArgs(
+		"1",
+		true,
+	).WillReturnError(expectedErr)
+	pool.ExpectRollback()
+
+	users := NewUserRepository(pool)
+
+	actualUser, err := users.GetNextUser(context.Background(), "1", true)
+	assert.NotNil(t, err)
+	assert.True(t, errors.Is(err, expectedErr))
+	assert.Nil(t, actualUser)
+
+	if err := pool.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestUserRepository_GetNextUserShouldReturnRows(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

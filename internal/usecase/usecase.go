@@ -11,7 +11,7 @@ type Usecase struct {
 	likes  internal.LikesRepository
 	bot    *tgbotapi.BotAPI
 	log    *zap.SugaredLogger
-	stages map[int]string
+	Stages map[int]string
 }
 
 var _ internal.Usecase = &Usecase{}
@@ -35,7 +35,7 @@ func NewUsecase(
 		likes:  likes,
 		bot:    bot,
 		log:    log,
-		stages: stages,
+		Stages: stages,
 	}
 }
 

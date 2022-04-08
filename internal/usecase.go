@@ -16,7 +16,7 @@ type Usecase interface {
 
 	AddOrUpdateLike(ctx context.Context, likeValue bool, fromId, toId string) error
 	HasLikeWithTrueValue(ctx context.Context, fromId, toId string) (bool, error)
-	CreateMatchMessages(user1, user2 *models.User) (tgbotapi.Chattable, tgbotapi.Chattable)
+	CreateMatchMessages(user1, user2 *models.User) (tgbotapi.Chattable, tgbotapi.Chattable, error)
 
 	GetUserByIdOrNil(ctx context.Context, userId string) (*models.User, error)
 }

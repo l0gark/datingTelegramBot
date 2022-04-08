@@ -52,7 +52,11 @@ func (u *Usecase) HasLikeWithTrueValue(ctx context.Context, fromId, toId string)
 	return reverseLike.Value, nil
 }
 
-func (u *Usecase) CreateMatchMessages(user1, user2 *models.User) (tgbotapi.Chattable, tgbotapi.Chattable) {
+func (u *Usecase) CreateMatchMessages(user1, user2 *models.User) (tgbotapi.Chattable, tgbotapi.Chattable, error) {
+	if user1 == nil || user2 == nil {
+		u.log.Errorf("couldn't create match messages, because users are nil")
+		return nil, nil, errors.New("couldn't create match messages, because users are nil")
+	}
 	ava1 := tgbotapi.FileID(user1.Image)
 	match2Message := tgbotapi.NewPhoto(user2.ChatId, ava1)
 	match2Message.Caption = internal.CreateMatchCaption(user1)
@@ -63,5 +67,5 @@ func (u *Usecase) CreateMatchMessages(user1, user2 *models.User) (tgbotapi.Chatt
 	match1Message.Caption = internal.CreateMatchCaption(user2)
 	match1Message.ParseMode = tgbotapi.ModeMarkdown
 
-	return match1Message, match2Message
+	return match1Message, match2Message, nil
 }

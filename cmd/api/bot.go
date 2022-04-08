@@ -132,7 +132,10 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 					return
 				}
 
-				match1Message, match2Message := a.usecase.CreateMatchMessages(user, user2)
+				match1Message, match2Message, err := a.usecase.CreateMatchMessages(user, user2)
+				if err != nil {
+					return
+				}
 
 				if _, err := a.bot.Send(match1Message); err != nil {
 					a.log.Errorf("could not send message with error %e", err)

@@ -16,4 +16,4 @@ jobs:
     steps:
     - uses: actions/setup-go@v3
     - uses: actions/checkout@v3
-    - run: go test ./...
+    - run: go test ./internal/usecase ./internal/data/postgres -v

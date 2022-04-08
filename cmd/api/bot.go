@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
 	"github.com/Eretic431/datingTelegramBot/internal/usecase"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -20,24 +21,39 @@ func (a *application) handleUpdates() {
 
 	for update := range a.updates {
 		ctx := context.Background()
-		if update.Message != nil {
-			user, err := a.usecase.GetUserByIdOrNil(ctx, update.Message.From.UserName)
-			if err != nil {
-				continue
-			}
+		var outputMessages []tgbotapi.Chattable
+		var err error
 
-			a.handleMessages(ctx, update.Message, user)
+		if update.Message != nil {
+			outputMessages, err = a.handleMessage(ctx, update.Message)
 		} else if update.CallbackQuery != nil {
-			user, err := a.usecase.GetUserByIdOrNil(ctx, update.CallbackQuery.From.UserName)
-			if err != nil {
-				continue
+			outputMessages, err = a.handleCallbackQuery(ctx, update.CallbackQuery)
+		}
+
+		if err != nil {
+			continue
+		}
+
+		for _, message := range outputMessages {
+			if message != nil {
+				if _, err := a.bot.Send(message); err != nil {
+					a.log.Warnf("could not send message with error %e", err)
+					return
+				}
 			}
-			a.handleCallbackQueries(ctx, update.CallbackQuery, user)
 		}
 	}
 }
 
-func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message, user *models.User) {
+func (a *application) handleMessage(ctx context.Context, msg *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
+	user, err := a.users.GetByUserId(ctx, msg.From.UserName)
+	if err != nil && !errors.Is(err, models.ErrNoRecord) {
+		return nil, err
+	}
+	return a.handleUserMessage(ctx, msg, user)
+}
+
+func (a *application) handleUserMessage(ctx context.Context, msg *tgbotapi.Message, user *models.User) ([]tgbotapi.Chattable, error) {
 	var outputMsg tgbotapi.Chattable
 	var err error
 
@@ -57,7 +73,7 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 		} else {
 			outputMsg, err = a.usecase.HandleFillingProfile(ctx, msg.Text, msg.Chat.ID, fileId, user)
 			if err != nil {
-				return
+				return nil, err
 			}
 		}
 	} else {
@@ -65,7 +81,7 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 		if ok {
 			started, err := a.usecase.IsStarted(ctx, msg)
 			if err != nil {
-				return
+				return nil, err
 			}
 
 			if started {
@@ -79,12 +95,12 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 					outputMsg, err = a.usecase.HandleCommandNext(ctx, msg.Chat.ID, user)
 				}
 				if err != nil {
-					return
+					return nil, err
 				}
 			} else {
 				outputMsg, err = a.usecase.HandleStart(ctx, msg, started)
 				if err != nil {
-					return
+					return nil, err
 				}
 			}
 		} else {
@@ -92,18 +108,23 @@ func (a *application) handleMessages(ctx context.Context, msg *tgbotapi.Message,
 		}
 	}
 
-	if _, err := a.bot.Send(outputMsg); err != nil {
-		a.log.Warnf("could not send message with error %e", err)
-		return
-	}
+	return []tgbotapi.Chattable{outputMsg}, nil
 }
 
-func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.CallbackQuery, user *models.User) {
-	callback := tgbotapi.NewCallback(cq.ID, cq.Data)
-	if _, err := a.bot.Request(callback); err != nil {
-		a.log.Errorf("could not request callback with error %e", err)
-		return
+func (a *application) handleCallbackQuery(ctx context.Context, cq *tgbotapi.CallbackQuery) ([]tgbotapi.Chattable, error) {
+	user, err := a.users.GetByUserId(ctx, cq.From.UserName)
+	if err != nil && !errors.Is(err, models.ErrNoRecord) {
+		return nil, err
 	}
+	return a.handleUserCallbackQuery(ctx, cq, user)
+}
+
+func (a *application) handleUserCallbackQuery(ctx context.Context, cq *tgbotapi.CallbackQuery, user *models.User) ([]tgbotapi.Chattable, error) {
+	//callback := tgbotapi.NewCallback(cq.ID, cq.Data)
+	//if _, err := a.bot.Request(callback); err != nil {
+	//	a.log.Errorf("could not request callback with error %e", err)
+	//	return nil, err
+	//}
 
 	var msg tgbotapi.Chattable
 	var err error
@@ -117,41 +138,33 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 		likeValue := splitedData[0] == "like"
 
 		if err := a.usecase.AddOrUpdateLike(ctx, likeValue, fromUserId, toUserId); err != nil {
-			return
+			return nil, err
 		}
 
 		if likeValue {
 			hasReverseLike, err := a.usecase.HasLikeWithTrueValue(ctx, toUserId, cq.From.UserName)
 			if err != nil {
-				return
+				return nil, err
 			}
 
 			if hasReverseLike {
 				user2, err := a.usecase.GetUserByIdOrNil(ctx, toUserId)
 				if err != nil || user2 == nil {
-					return
+					return nil, err
 				}
 
 				match1Message, match2Message, err := a.usecase.CreateMatchMessages(user, user2)
 				if err != nil {
-					return
+					return nil, err
 				}
 
-				if _, err := a.bot.Send(match1Message); err != nil {
-					a.log.Errorf("could not send message with error %e", err)
-					return
-				}
-
-				if _, err := a.bot.Send(match2Message); err != nil {
-					a.log.Errorf("could not send message with error %e", err)
-					return
-				}
+				return []tgbotapi.Chattable{match2Message, match1Message}, nil
 			}
 		}
 
 		msg, err = a.usecase.HandleCommandNext(ctx, cq.Message.Chat.ID, user)
 		if err != nil {
-			return
+			return nil, err
 		}
 
 	} else {
@@ -160,12 +173,10 @@ func (a *application) handleCallbackQueries(ctx context.Context, cq *tgbotapi.Ca
 
 	if err != nil {
 		a.log.Errorf("could not handle profile filling with error %e", err)
-		return
+		return nil, err
 	}
-	if _, err := a.bot.Send(msg); err != nil {
-		a.log.Errorf("could not send message with error %e", err)
-		return
-	}
+
+	return []tgbotapi.Chattable{msg}, nil
 }
 
 func (a *application) handleUndefinedMessage(inputMsg *tgbotapi.Message) tgbotapi.MessageConfig {

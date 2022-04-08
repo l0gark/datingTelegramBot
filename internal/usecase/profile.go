@@ -121,7 +121,6 @@ func (u *Usecase) HandleFillingProfile(
 
 	}
 
-	u.log.Infow("LOL", "correct", correct)
 	if correct {
 		if user.Stage < MaxProfileStage {
 			user.Stage += 1

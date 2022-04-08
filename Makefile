@@ -36,3 +36,6 @@ test-coverage:
 	rm coverage/coverage.out
 	# See http://inglorion.net/software/detach/
 	detach xdg-open coverage/coverage.html
+
+test:
+	go test ./internal/usecase ./internal/data/postgres -v

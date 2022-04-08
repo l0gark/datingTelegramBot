@@ -12,6 +12,179 @@ import (
 	"testing"
 )
 
+func TestUsecase_AddOrUpdateLike(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	likesRepo := mock.NewMockLikesRepository(ctrl)
+	fromId := "user1"
+	toId := "user2"
+	ctx := context.Background()
+
+	expectedLike := &models.Like{Value: true}
+
+	likesRepo.EXPECT().
+		Update(ctx, expectedLike).
+		After(
+			likesRepo.EXPECT().
+				Get(ctx, fromId, toId).
+				Return(expectedLike, nil).
+				Times(1),
+		).
+		Return(nil).
+		Times(1)
+
+	usecase := NewUsecase(
+		nil,
+		likesRepo,
+		nil,
+		zaptest.NewLogger(t).Sugar(),
+	)
+
+	err := usecase.AddOrUpdateLike(ctx, true, fromId, toId)
+	assert.Nil(t, err)
+}
+
+func TestUsecase_AddOrUpdateLike_ShouldReturnSameErrOnUpdateFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	likesRepo := mock.NewMockLikesRepository(ctrl)
+	fromId := "user1"
+	toId := "user2"
+	ctx := context.Background()
+
+	expectedLike := &models.Like{Value: true}
+	expectedErr := errors.New("some err")
+
+	likesRepo.EXPECT().
+		Update(ctx, expectedLike).
+		After(
+			likesRepo.EXPECT().
+				Get(ctx, fromId, toId).
+				Return(expectedLike, nil).
+				Times(1),
+		).
+		Return(expectedErr).
+		Times(1)
+
+	usecase := NewUsecase(
+		nil,
+		likesRepo,
+		nil,
+		zaptest.NewLogger(t).Sugar(),
+	)
+
+	err := usecase.AddOrUpdateLike(ctx, true, fromId, toId)
+	assert.NotNil(t, err)
+	assert.True(t, errors.Is(err, expectedErr))
+}
+
+func TestUsecase_AddOrUpdateLike_ShouldReturnSameErrOnGetLikeFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	likesRepo := mock.NewMockLikesRepository(ctrl)
+	fromId := "user1"
+	toId := "user2"
+	ctx := context.Background()
+
+	expectedErr := errors.New("some err")
+
+	likesRepo.EXPECT().
+		Get(ctx, fromId, toId).
+		Return(nil, expectedErr).
+		Times(1)
+
+	usecase := NewUsecase(
+		nil,
+		likesRepo,
+		nil,
+		zaptest.NewLogger(t).Sugar(),
+	)
+
+	err := usecase.AddOrUpdateLike(ctx, true, fromId, toId)
+	assert.NotNil(t, err)
+	assert.True(t, errors.Is(err, expectedErr))
+}
+
+func TestUsecase_AddOrUpdateLike_ShouldAddLikeIfNotExists(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	likesRepo := mock.NewMockLikesRepository(ctrl)
+	fromId := "user1"
+	toId := "user2"
+	likeToInsert := &models.Like{
+		FromId: fromId,
+		ToId:   toId,
+		Value:  true,
+	}
+
+	ctx := context.Background()
+
+	likesRepo.EXPECT().
+		Add(ctx, likeToInsert).
+		After(
+			likesRepo.EXPECT().
+				Get(ctx, fromId, toId).
+				Return(nil, models.ErrNoRecord).
+				Times(1),
+		).
+		Return(nil).
+		Times(1)
+
+	usecase := NewUsecase(
+		nil,
+		likesRepo,
+		nil,
+		zaptest.NewLogger(t).Sugar(),
+	)
+
+	err := usecase.AddOrUpdateLike(ctx, true, fromId, toId)
+	assert.Nil(t, err)
+}
+
+func TestUsecase_AddOrUpdateLike_ShouldReturnSameErrOnAddLikeFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	likesRepo := mock.NewMockLikesRepository(ctrl)
+	fromId := "user1"
+	toId := "user2"
+	likeToInsert := &models.Like{
+		FromId: fromId,
+		ToId:   toId,
+		Value:  true,
+	}
+
+	expectedErr := errors.New("some err")
+
+	ctx := context.Background()
+
+	likesRepo.EXPECT().
+		Add(ctx, likeToInsert).
+		After(
+			likesRepo.EXPECT().
+				Get(ctx, fromId, toId).
+				Return(nil, models.ErrNoRecord).
+				Times(1),
+		).
+		Return(expectedErr).
+		Times(1)
+
+	usecase := NewUsecase(
+		nil,
+		likesRepo,
+		nil,
+		zaptest.NewLogger(t).Sugar(),
+	)
+
+	err := usecase.AddOrUpdateLike(ctx, true, fromId, toId)
+	assert.NotNil(t, err)
+	assert.True(t, errors.Is(err, expectedErr))
+}
+
 func TestUsecase_HasLikeWithTrueValue(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

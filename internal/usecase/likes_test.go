@@ -1,12 +1,99 @@
 package usecase
 
 import (
+	"context"
+	"errors"
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
+	"github.com/Eretic431/datingTelegramBot/internal/mock"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
 	"testing"
 )
+
+func TestUsecase_HasLikeWithTrueValue(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	likesRepo := mock.NewMockLikesRepository(ctrl)
+	fromId := "user1"
+	toId := "user2"
+	ctx := context.Background()
+
+	expectedLike := &models.Like{Value: true}
+
+	likesRepo.EXPECT().
+		Get(ctx, fromId, toId).
+		Return(expectedLike, nil).
+		Times(1)
+
+	usecase := NewUsecase(
+		nil,
+		likesRepo,
+		nil,
+		zaptest.NewLogger(t).Sugar(),
+	)
+
+	hasLike, err := usecase.HasLikeWithTrueValue(ctx, fromId, toId)
+	assert.Nil(t, err)
+	assert.EqualValues(t, expectedLike.Value, hasLike)
+}
+
+func TestUsecase_HasLikeWithTrueValue_ShouldReturnOnErrNoRecord(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	likesRepo := mock.NewMockLikesRepository(ctrl)
+	fromId := "user1"
+	toId := "user2"
+	ctx := context.Background()
+
+	likesRepo.EXPECT().
+		Get(ctx, fromId, toId).
+		Return(nil, models.ErrNoRecord).
+		Times(1)
+
+	usecase := NewUsecase(
+		nil,
+		likesRepo,
+		nil,
+		zaptest.NewLogger(t).Sugar(),
+	)
+
+	hasLike, err := usecase.HasLikeWithTrueValue(ctx, fromId, toId)
+	assert.Nil(t, err)
+	assert.False(t, hasLike)
+}
+
+func TestUsecase_HasLikeWithTrueValue_ShouldReturnSameErrOnFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	likesRepo := mock.NewMockLikesRepository(ctrl)
+	fromId := "user1"
+	toId := "user2"
+	ctx := context.Background()
+
+	expectedErr := errors.New("some err")
+
+	likesRepo.EXPECT().
+		Get(ctx, fromId, toId).
+		Return(nil, expectedErr).
+		Times(1)
+
+	usecase := NewUsecase(
+		nil,
+		likesRepo,
+		nil,
+		zaptest.NewLogger(t).Sugar(),
+	)
+
+	hasLike, err := usecase.HasLikeWithTrueValue(ctx, fromId, toId)
+	assert.NotNil(t, err)
+	assert.True(t, errors.Is(err, expectedErr))
+	assert.False(t, hasLike)
+}
 
 func TestUsecase_CreateMatchMessages_ShouldReturnErrOnNilUsers(t *testing.T) {
 	usecase := NewUsecase(

@@ -2,32 +2,45 @@ version: '3'
 
 services:
   db:
+    container_name: bot-postgres
     image: postgres:13
     restart: always
     ports:
-      - 127.0.0.1:5433:5432
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=tgbot
-    #volumes:
-    #  - database-data:/var/lib/postgresql/data/
+      - "5433:5432"
+    env_file:
+      - .env
+    volumes:
+      - database-data:/var/lib/postgresql/data/
 
   migrate:
+    container_name: bot-migrate
     image: migrate/migrate
+    restart: on-failure
     volumes:
-    - ./migrations:/migrations
-    command: ["-path", "/migrations", "-database", "postgres://postgres:tgbot@db:5432/postgres?sslmode=disable", "up"]
+      - ./migrations:/migrations
+    env_file:
+      - .env
+    command: [ "-path", "/migrations", "-database", "${POSTGRES_URL}", "up" ]
     depends_on:
       - db
 
   app:
-    image: ghcr.io/eretic431/datingtelegrambot:latest
+    container_name: bot-app
+    build: .
     restart: unless-stopped
-    environment:
-      - BOT_TOKEN=5085296878:AAFm-DFK-_S0Eg7GpXhkq0S6XN1W9BhLVLU
+    env_file:
+      - .env
     depends_on:
       - db
       - migrate
 
-#volumes:
-#  database-data:
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: bot-dozzle
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8888:8080"
+
+volumes:
+  database-data:

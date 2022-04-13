@@ -12,7 +12,6 @@ import (
 
 func Test_Scenario1_1(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/next"}
 	ctx := context.Background()
@@ -32,7 +31,6 @@ func Test_Scenario1_1(t *testing.T) {
 
 func Test_Scenario1_2(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
 	ctx := context.Background()
@@ -52,7 +50,6 @@ func Test_Scenario1_2(t *testing.T) {
 
 func Test_Scenario2(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
 	ctx := context.Background()
@@ -72,7 +69,6 @@ func Test_Scenario2(t *testing.T) {
 
 func Test_Scenario3(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
 	ctx := context.Background()
@@ -100,7 +96,6 @@ func Test_Scenario3(t *testing.T) {
 
 func Test_Scenario4(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
 	ctx := context.Background()
@@ -126,7 +121,6 @@ func Test_Scenario4(t *testing.T) {
 
 func Test_Scenario5(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
@@ -152,7 +146,6 @@ func Test_Scenario5(t *testing.T) {
 
 func Test_Scenario6(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
 	ctx := context.Background()
@@ -184,7 +177,6 @@ func Test_Scenario6(t *testing.T) {
 
 func Test_Scenario7(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
@@ -222,7 +214,6 @@ func Test_Scenario7(t *testing.T) {
 
 func Test_Scenario8(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
@@ -249,7 +240,6 @@ func Test_Scenario8(t *testing.T) {
 
 func Test_Scenario9(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
@@ -291,7 +281,6 @@ func Test_Scenario9(t *testing.T) {
 
 func Test_Scenario10(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
@@ -329,7 +318,6 @@ func Test_Scenario10(t *testing.T) {
 
 func Test_Scenario11(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
@@ -367,7 +355,6 @@ func Test_Scenario11(t *testing.T) {
 
 func Test_Scenario12(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
 	ctx := context.Background()
@@ -404,7 +391,6 @@ func Test_Scenario12(t *testing.T) {
 
 func Test_Scenario13(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
@@ -431,7 +417,6 @@ func Test_Scenario13(t *testing.T) {
 
 func Test_Scenario14(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
@@ -491,7 +476,6 @@ func Test_Scenario14(t *testing.T) {
 
 func Test_Scenario15(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/asdkajsd"}
 	ctx := context.Background()

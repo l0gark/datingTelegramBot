@@ -7,7 +7,6 @@ import (
 	"github.com/Eretic431/datingTelegramBot/internal/usecase"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/stretchr/testify/assert"
-	"log"
 	"testing"
 )
 
@@ -271,8 +270,7 @@ func Test_Scenario7(t *testing.T) {
 		Chat:     &tgbotapi.Chat{ID: 1},
 	}
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp, ok := chattable[0].(*tgbotapi.MessageConfig)
-	log.Println(resp.Text)
+	_, ok := chattable[0].(tgbotapi.MessageConfig)
 
 	assert.True(t, ok)
 }

@@ -350,9 +350,9 @@ func Test_Scenario9(t *testing.T) {
 		Data:    "like;Masha",
 		Message: &tgbotapi.Message{Chat: &tgbotapi.Chat{ID: 123}}}
 	chattable, _ := app.handleCallbackQuery(ctx, cq)
-	_, ok := chattable[0].(*tgbotapi.PhotoConfig)
+	_, ok := chattable[0].(tgbotapi.PhotoConfig)
 	assert.True(t, ok)
-	_, ok = chattable[1].(*tgbotapi.PhotoConfig)
+	_, ok = chattable[1].(tgbotapi.PhotoConfig)
 	assert.True(t, ok)
 }
 
@@ -361,6 +361,7 @@ func Test_Scenario10(t *testing.T) {
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -374,6 +375,7 @@ func Test_Scenario10(t *testing.T) {
 	_ = app.users.Add(ctx, user1)
 
 	user2 := &models.User{
+		Id:          "Arkasha",
 		Name:        "Arkasha",
 		Sex:         true,
 		Age:         20,
@@ -386,7 +388,12 @@ func Test_Scenario10(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user2)
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/next"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "Masha"},
+		Text:     "/next",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 5}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ := app.handleMessage(ctx, msg)
 	_, ok := chattable[0].(tgbotapi.MessageConfig)
 

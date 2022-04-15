@@ -1,5 +1,6 @@
 WORKDIR=./tmp
 DB_DSN=postgres://postgres:tgbot@localhost/postgres?sslmode=disable
+VERSION=2
 
 wire-gen:
 	wire ./cmd/api

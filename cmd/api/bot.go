@@ -14,11 +14,13 @@ var (
 	commands = make(map[string]struct{}, 3)
 )
 
-func (a *application) handleUpdates() {
+func init() {
 	commands["start"] = struct{}{}
 	commands["profile"] = struct{}{}
 	commands["next"] = struct{}{}
+}
 
+func (a *application) handleUpdates() {
 	for update := range a.updates {
 		ctx := context.Background()
 		var outputMessages []tgbotapi.Chattable

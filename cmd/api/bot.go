@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/Eretic431/datingTelegramBot/internal"
 	"github.com/Eretic431/datingTelegramBot/internal/data/models"
 	"github.com/Eretic431/datingTelegramBot/internal/usecase"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -12,7 +11,6 @@ import (
 )
 
 var (
-	stages   = make(map[int]string, 6)
 	commands = make(map[string]struct{}, 3)
 )
 
@@ -133,60 +131,32 @@ func (a *application) handleUserCallbackQuery(ctx context.Context, cq *tgbotapi.
 
 	if strings.HasPrefix(cq.Data, "like") || strings.HasPrefix(cq.Data, "dislike") {
 		splitedData := strings.Split(cq.Data, ";")
-		userId := splitedData[1]
+
+		fromUserId := cq.From.UserName
+		toUserId := splitedData[1]
 
 		likeValue := splitedData[0] == "like"
 
-		oldLike, err := a.likes.Get(ctx, cq.From.UserName, userId)
-		if err != nil {
-			if errors.Is(err, models.ErrNoRecord) {
-				err := a.likes.Add(ctx, &models.Like{
-					FromId: cq.From.UserName,
-					ToId:   userId,
-					Value:  likeValue,
-				})
-
-				if err != nil {
-					a.log.Errorf("could not insert like with error %e", err)
-					return nil, err
-				}
-			} else {
-				a.log.Errorf("could not get like with error %e", err)
-				return nil, err
-			}
-		} else {
-			oldLike.Value = likeValue
-			err := a.likes.Update(ctx, oldLike)
-			if err != nil {
-				a.log.Errorf("could not update like with error %e", err)
-				return nil, err
-			}
+		if err := a.usecase.AddOrUpdateLike(ctx, likeValue, fromUserId, toUserId); err != nil {
+			return nil, err
 		}
 
 		if likeValue {
-
-			reverseLike, err := a.likes.Get(ctx, userId, cq.From.UserName)
+			hasReverseLike, err := a.usecase.HasLikeWithTrueValue(ctx, toUserId, cq.From.UserName)
 			if err != nil {
-				if !errors.Is(err, models.ErrNoRecord) {
-					a.log.Errorf("could not get reverse like with error %e", err)
+				return nil, err
+			}
+
+			if hasReverseLike {
+				user2, err := a.usecase.GetUserByIdOrNil(ctx, toUserId)
+				if err != nil || user2 == nil {
 					return nil, err
 				}
-			} else if reverseLike != nil && reverseLike.Value {
-				user2, err := a.users.GetByUserId(ctx, reverseLike.FromId)
+
+				match1Message, match2Message, err := a.usecase.CreateMatchMessages(user, user2)
 				if err != nil {
-					a.log.Errorf("could not get user with error %e", err)
 					return nil, err
 				}
-
-				ava1 := tgbotapi.FileID(user.Image)
-				match2Message := tgbotapi.NewPhoto(user2.ChatId, ava1)
-				match2Message.Caption = internal.CreateMatchCaption(user)
-				match2Message.ParseMode = tgbotapi.ModeMarkdown
-
-				ava2 := tgbotapi.FileID(user2.Image)
-				match1Message := tgbotapi.NewPhoto(user.ChatId, ava2)
-				match1Message.Caption = internal.CreateMatchCaption(user2)
-				match1Message.ParseMode = tgbotapi.ModeMarkdown
 
 				return []tgbotapi.Chattable{match2Message, match1Message}, nil
 			}

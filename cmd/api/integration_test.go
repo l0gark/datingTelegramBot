@@ -171,7 +171,12 @@ func Test_Scenario5(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user1)
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/profile",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ := app.handleMessage(ctx, msg)
 	resp := chattable[0].(tgbotapi.MessageConfig)
 
@@ -182,7 +187,12 @@ func Test_Scenario5(t *testing.T) {
 func Test_Scenario6(t *testing.T) {
 	app := newTestApp()
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/start",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 6}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
 	resp := chattable[0].(tgbotapi.MessageConfig)
@@ -196,14 +206,23 @@ func Test_Scenario6(t *testing.T) {
 	)
 	assert.Equal(t, expected, resp.Text)
 
-	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
+	msg = &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/profile",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ = app.handleMessage(ctx, msg)
 	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = app.usecase.(*usecase.Usecase).Stages[0]
 	assert.Equal(t, expected, resp.Text)
 
-	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Document: &tgbotapi.Document{}}
+	msg = &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Document: &tgbotapi.Document{},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ = app.handleMessage(ctx, msg)
 
 	expected = "Данные введены некорректно, попробуйте снова."
@@ -240,7 +259,12 @@ func Test_Scenario7(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user2)
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/next"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/next",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 5}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ := app.handleMessage(ctx, msg)
 	_, ok := chattable[0].(*tgbotapi.PhotoConfig)
 
@@ -264,7 +288,12 @@ func Test_Scenario8(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user1)
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/next"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/next",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 5}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ := app.handleMessage(ctx, msg)
 	resp := chattable[0].(tgbotapi.MessageConfig)
 

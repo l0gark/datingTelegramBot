@@ -172,7 +172,7 @@ func Test_Scenario5(t *testing.T) {
 	_ = app.users.Add(ctx, user1)
 
 	msg := &tgbotapi.Message{
-		From:     &tgbotapi.User{UserName: "test"},
+		From:     &tgbotapi.User{UserName: "Masha"},
 		Text:     "/profile",
 		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
 		Chat:     &tgbotapi.Chat{ID: 1},

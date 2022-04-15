@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 func newTestApp() *application {
 	app, _, err := initApp()
 	if err != nil {
-		log.Fatalf("could not create app %e", err)
+		log.Fatalf("could not create app %s", err.Error())
 	}
 	_ = refreshUsersTable()
 	_ = refreshLikesTable()

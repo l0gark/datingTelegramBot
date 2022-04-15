@@ -85,7 +85,12 @@ func Test_Scenario2(t *testing.T) {
 func Test_Scenario3(t *testing.T) {
 	app := newTestApp()
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/start",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 6}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
 	resp := chattable[0].(tgbotapi.MessageConfig)
@@ -100,7 +105,12 @@ func Test_Scenario3(t *testing.T) {
 
 	assert.Equal(t, expected, resp.Text)
 
-	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
+	msg = &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/start",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 6}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ = app.handleMessage(ctx, msg)
 	resp = chattable[0].(tgbotapi.MessageConfig)
 

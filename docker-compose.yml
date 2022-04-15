@@ -25,6 +25,7 @@ services:
     restart: unless-stopped
     environment:
       - BOT_TOKEN=5085296878:AAFm-DFK-_S0Eg7GpXhkq0S6XN1W9BhLVLU
+      - POSTGRES_URL=postgres://postgres:tgbot@db:5432/postgres?sslmode=disable"
     depends_on:
       - db
       - migrate

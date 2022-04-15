@@ -38,5 +38,6 @@ jobs:
           sudo mv migrate /usr/bin/
           which migrate
     - run: make migrate_up
+    - run: export POSTGRES_URL=postgres://postgres:tgbot@localhost/postgres?sslmode=disable
     - run: go test ./cmd/api -v
     - run: go test ./internal/usecase ./internal/data/postgres -v

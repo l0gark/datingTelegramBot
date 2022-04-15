@@ -519,7 +519,7 @@ func Test_Scenario13(t *testing.T) {
 	chattable, _ := app.handleMessage(ctx, msg)
 	resp := chattable[0].(tgbotapi.MessageConfig)
 
-	expected := "Пожалуйста дозаполните анкету."
+	expected := "Данные введены некорректно, попробуйте снова."
 
 	assert.Equal(t, expected, resp.Text)
 }

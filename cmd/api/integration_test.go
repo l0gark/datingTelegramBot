@@ -221,11 +221,11 @@ func Test_Scenario6(t *testing.T) {
 
 	msg = &tgbotapi.Message{
 		From:     &tgbotapi.User{UserName: "test"},
-		Text:     "",
 		Document: &tgbotapi.Document{},
 		Chat:     &tgbotapi.Chat{ID: 1},
 	}
 	chattable, _ = app.handleMessage(ctx, msg)
+	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = "Данные введены некорректно, попробуйте снова."
 	assert.Equal(t, expected, resp.Text)

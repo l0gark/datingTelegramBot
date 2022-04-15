@@ -21,7 +21,7 @@ func Test_Scenario1_1(t *testing.T) {
 	}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -40,7 +40,7 @@ func Test_Scenario1_2(t *testing.T) {
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -59,7 +59,7 @@ func Test_Scenario2(t *testing.T) {
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -78,7 +78,7 @@ func Test_Scenario3(t *testing.T) {
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -92,7 +92,7 @@ func Test_Scenario3(t *testing.T) {
 
 	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
 	chattable, _ = app.handleMessage(ctx, msg)
-	resp = chattable[0].(*tgbotapi.MessageConfig)
+	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = "Вы уже зарегистрированы в системе"
 
@@ -105,7 +105,7 @@ func Test_Scenario4(t *testing.T) {
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -118,7 +118,7 @@ func Test_Scenario4(t *testing.T) {
 
 	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
 	chattable, _ = app.handleMessage(ctx, msg)
-	resp = chattable[0].(*tgbotapi.MessageConfig)
+	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = app.usecase.(*usecase.Usecase).Stages[0]
 	assert.Equal(t, expected, resp.Text)
@@ -143,7 +143,7 @@ func Test_Scenario5(t *testing.T) {
 
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := app.usecase.(*usecase.Usecase).Stages[0]
 	assert.Equal(t, expected, resp.Text)
@@ -155,7 +155,7 @@ func Test_Scenario6(t *testing.T) {
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -168,7 +168,7 @@ func Test_Scenario6(t *testing.T) {
 
 	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
 	chattable, _ = app.handleMessage(ctx, msg)
-	resp = chattable[0].(*tgbotapi.MessageConfig)
+	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = app.usecase.(*usecase.Usecase).Stages[0]
 	assert.Equal(t, expected, resp.Text)
@@ -236,7 +236,7 @@ func Test_Scenario8(t *testing.T) {
 
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/next"}
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := "Все анкеты просмотрены. Попробуйте ещё раз немного позже."
 
@@ -316,7 +316,7 @@ func Test_Scenario10(t *testing.T) {
 
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/next"}
 	chattable, _ := app.handleMessage(ctx, msg)
-	_, ok := chattable[0].(*tgbotapi.MessageConfig)
+	_, ok := chattable[0].(tgbotapi.MessageConfig)
 
 	assert.True(t, ok)
 }
@@ -364,7 +364,7 @@ func Test_Scenario12(t *testing.T) {
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -378,7 +378,7 @@ func Test_Scenario12(t *testing.T) {
 
 	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/next"}
 	chattable, _ = app.handleMessage(ctx, msg)
-	resp = chattable[0].(*tgbotapi.MessageConfig)
+	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = "Все анкеты просмотрены. Попробуйте ещё раз немного позже."
 
@@ -387,7 +387,7 @@ func Test_Scenario12(t *testing.T) {
 	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
 	ctx = context.Background()
 	chattable, _ = app.handleMessage(ctx, msg)
-	resp = chattable[0].(*tgbotapi.MessageConfig)
+	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = app.usecase.(*usecase.Usecase).Stages[0]
 
@@ -413,7 +413,7 @@ func Test_Scenario13(t *testing.T) {
 
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := "Данные введены некорректно, попробуйте снова."
 
@@ -485,7 +485,7 @@ func Test_Scenario15(t *testing.T) {
 	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/asdkajsd"}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := "Такой команды не существует.\n\n" +
 		"*Список доступных команд:* \n" +

@@ -270,7 +270,7 @@ func Test_Scenario7(t *testing.T) {
 		Chat:     &tgbotapi.Chat{ID: 1},
 	}
 	chattable, _ := app.handleMessage(ctx, msg)
-	_, ok := chattable[0].(tgbotapi.MessageConfig)
+	_, ok := chattable[0].(tgbotapi.PhotoConfig)
 
 	assert.True(t, ok)
 }

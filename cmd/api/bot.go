@@ -79,7 +79,6 @@ func (a *application) handleUserMessage(ctx context.Context, msg *tgbotapi.Messa
 			}
 		}
 	} else {
-		log.Printf(msg.Command())
 		_, ok := commands[msg.Command()]
 		if ok {
 			started, err := a.usecase.IsStarted(ctx, msg)

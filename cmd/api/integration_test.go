@@ -221,6 +221,7 @@ func Test_Scenario6(t *testing.T) {
 
 	msg = &tgbotapi.Message{
 		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "",
 		Document: &tgbotapi.Document{},
 		Chat:     &tgbotapi.Chat{ID: 1},
 	}

@@ -49,7 +49,6 @@ func (a *application) handleUpdates() {
 
 func (a *application) handleMessage(ctx context.Context, msg *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 	user, err := a.users.GetByUserId(ctx, msg.From.UserName)
-	log.Print(user.Stage)
 	if err != nil && !errors.Is(err, models.ErrNoRecord) {
 		return nil, err
 	}

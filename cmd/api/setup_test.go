@@ -23,8 +23,8 @@ func newTestApp() *application {
 	}
 	db = app.users.DB.(*pgxpool.Pool)
 
-	_ = refreshUsersTable()
 	_ = refreshLikesTable()
+	_ = refreshUsersTable()
 
 	return app
 }

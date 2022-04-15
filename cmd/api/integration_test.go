@@ -498,6 +498,7 @@ func Test_Scenario13(t *testing.T) {
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -510,7 +511,12 @@ func Test_Scenario13(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user1)
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "Masha"},
+		Text:     "/profile",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ := app.handleMessage(ctx, msg)
 	resp := chattable[0].(tgbotapi.MessageConfig)
 

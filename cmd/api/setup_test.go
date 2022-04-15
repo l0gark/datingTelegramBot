@@ -36,7 +36,7 @@ func refreshUsersTable() error {
 		log.Fatal(err)
 	}
 
-	_, err = conn.Exec(ctx, "TRUNCATE TABLE users;")
+	_, err = conn.Exec(ctx, "DELETE FROM users;")
 
 	if err != nil {
 		log.Fatalf("Error truncating users table: %s", err)
@@ -51,7 +51,7 @@ func refreshLikesTable() error {
 		log.Fatal(err)
 	}
 
-	_, err = conn.Exec(ctx, "TRUNCATE TABLE likes;")
+	_, err = conn.Exec(ctx, "DELETE FROM likes;")
 
 	if err != nil {
 		log.Fatalf("Error truncating likes table: %s", err)

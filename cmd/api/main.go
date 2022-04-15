@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"log"
+	"net/http"
 )
 
 type application struct {
@@ -34,6 +35,15 @@ func main() {
 	if err != nil {
 		app.log.Fatalw("could not init server logger", "err", err)
 	}
+
+	go func() {
+		http.HandleFunc("/deleteAll", app.deleteAllHandler)
+
+		if err = http.ListenAndServe(":8090", nil); err != nil {
+			log.Fatalf("couldn't start listen and serve with err = %e", err)
+			return
+		}
+	}()
 
 	app.handleUpdates()
 }
@@ -66,4 +76,10 @@ func newPostgresConfig(c *config, logger *zap.SugaredLogger) *postgres.Config {
 		PostgresUrl: c.PostgresUrl,
 		Logger:      logger,
 	}
+}
+
+func (a *application) deleteAllHandler(w http.ResponseWriter, r *http.Request) {
+	a.usecase.DeleteAll(r.Context())
+	a.log.Info("deleting completed")
+	w.WriteHeader(http.StatusOK)
 }

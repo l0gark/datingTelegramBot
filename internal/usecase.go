@@ -19,4 +19,5 @@ type Usecase interface {
 	CreateMatchMessages(user1, user2 *models.User) (tgbotapi.Chattable, tgbotapi.Chattable, error)
 
 	GetUserByIdOrNil(ctx context.Context, userId string) (*models.User, error)
+	DeleteAll(ctx context.Context)
 }

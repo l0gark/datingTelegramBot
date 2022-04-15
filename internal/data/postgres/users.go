@@ -36,7 +36,12 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 		}
 	}()
 
-	query := "INSERT INTO users (id, name, sex, age, description, city, image, started, stage, chat_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, -1, $9);"
+	stage := user.Stage
+	if stage == 0 {
+		stage = -1
+	}
+
+	query := "INSERT INTO users (id, name, sex, age, description, city, image, started, stage, chat_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);"
 
 	if _, err = tx.Exec(ctx, query,
 		user.Id,
@@ -47,6 +52,7 @@ func (ur *UserRepository) Add(ctx context.Context, user *models.User) error {
 		user.City,
 		user.Image,
 		user.Started,
+		stage,
 		user.ChatId,
 	); err != nil {
 		pgErr := &pgconn.PgError{}

@@ -615,3 +615,46 @@ func Test_Scenario15(t *testing.T) {
 
 	assert.Equal(t, expected, resp.Text)
 }
+
+func Test_Scenario16(t *testing.T) {
+	app := newTestApp()
+
+	ctx := context.Background()
+	user1 := &models.User{
+		Id:          "Masha",
+		Name:        "Masha",
+		Sex:         false,
+		Age:         20,
+		Description: "haha",
+		City:        "test",
+		Image:       "hardcoded",
+		Started:     true,
+		Stage:       -1,
+		ChatId:      123,
+	}
+	_ = app.users.Add(ctx, user1)
+
+	user2 := &models.User{
+		Id:          "Arkasha",
+		Name:        "Arkasha",
+		Sex:         true,
+		Age:         20,
+		Description: "haha",
+		City:        "test",
+		Image:       "hardcoded",
+		Started:     true,
+		Stage:       -1,
+		ChatId:      123,
+	}
+	_ = app.users.Add(ctx, user2)
+
+	cq := &tgbotapi.CallbackQuery{
+		From:    &tgbotapi.User{UserName: "Masha"},
+		Data:    "like;Arkasha",
+		Message: &tgbotapi.Message{Chat: &tgbotapi.Chat{ID: 123}}}
+	_, _ = app.handleCallbackQuery(ctx, cq)
+
+	_, err := app.likes.Get(context.Background(), "Masha", "Arkasha")
+
+	assert.Nil(t, err)
+}

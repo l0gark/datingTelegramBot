@@ -21,6 +21,8 @@ func newTestApp() *application {
 	if err != nil {
 		log.Fatalf("could not create app %s", err.Error())
 	}
+	db = app.users.DB.(*pgxpool.Pool)
+
 	_ = refreshUsersTable()
 	_ = refreshLikesTable()
 

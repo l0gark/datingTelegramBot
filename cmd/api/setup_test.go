@@ -17,6 +17,8 @@ func TestMain(m *testing.M) {
 }
 
 func newTestApp() *application {
+	c, _ := getConfig()
+	log.Print(c.PostgresUrl)
 	app, _, err := initApp()
 	if err != nil {
 		log.Fatalf("could not create app %s", err.Error())

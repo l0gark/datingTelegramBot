@@ -36,7 +36,7 @@ func TestUserRepository_Add(t *testing.T) {
 		user.City,
 		user.Image,
 		user.Started,
-		-1,
+		user.Stage,
 		user.ChatId,
 	).WillReturnResult(pgxmock.NewResult("INSERT", 1))
 	pool.ExpectCommit()

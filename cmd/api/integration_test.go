@@ -236,6 +236,7 @@ func Test_Scenario7(t *testing.T) {
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -249,6 +250,7 @@ func Test_Scenario7(t *testing.T) {
 	_ = app.users.Add(ctx, user1)
 
 	user2 := &models.User{
+		Id:          "Arkasha",
 		Name:        "Arkasha",
 		Sex:         true,
 		Age:         20,
@@ -262,7 +264,7 @@ func Test_Scenario7(t *testing.T) {
 	_ = app.users.Add(ctx, user2)
 
 	msg := &tgbotapi.Message{
-		From:     &tgbotapi.User{UserName: "test"},
+		From:     &tgbotapi.User{UserName: "Masha"},
 		Text:     "/next",
 		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 5}},
 		Chat:     &tgbotapi.Chat{ID: 1},

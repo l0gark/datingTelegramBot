@@ -38,5 +38,5 @@ jobs:
           sudo mv migrate /usr/bin/
           which migrate
     - run: make migrate_up
-    - run: go test ./cmd/api/integration_test.go -v
+    - run: go test ./cmd/api -v
     - run: go test ./internal/usecase ./internal/data/postgres -v

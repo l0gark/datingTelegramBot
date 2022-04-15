@@ -31,5 +31,5 @@ jobs:
     steps:
     - uses: actions/setup-go@v3
     - uses: actions/checkout@v3
-    - run: docker run -v ./migrations:/migrations --network host migrate/migrate -path=/migrations/ -database postgres://postgres:tgbot@db:5432/postgres?sslmode=disable up
+    - run: docker run -v migrations:/migrations --network host migrate/migrate -path=/migrations/ -database postgres://postgres:tgbot@db:5432/postgres?sslmode=disable up
     - run: go test ./internal/usecase ./internal/data/postgres -v

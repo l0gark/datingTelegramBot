@@ -7,6 +7,7 @@ import (
 	"github.com/Eretic431/datingTelegramBot/internal/usecase"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/stretchr/testify/assert"
+	"log"
 	"testing"
 )
 
@@ -270,7 +271,8 @@ func Test_Scenario7(t *testing.T) {
 		Chat:     &tgbotapi.Chat{ID: 1},
 	}
 	chattable, _ := app.handleMessage(ctx, msg)
-	_, ok := chattable[0].(*tgbotapi.PhotoConfig)
+	resp, ok := chattable[0].(*tgbotapi.MessageConfig)
+	log.Println(resp.Text)
 
 	assert.True(t, ok)
 }
@@ -280,6 +282,7 @@ func Test_Scenario8(t *testing.T) {
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -293,7 +296,7 @@ func Test_Scenario8(t *testing.T) {
 	_ = app.users.Add(ctx, user1)
 
 	msg := &tgbotapi.Message{
-		From:     &tgbotapi.User{UserName: "test"},
+		From:     &tgbotapi.User{UserName: "Masha"},
 		Text:     "/next",
 		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 5}},
 		Chat:     &tgbotapi.Chat{ID: 1},
@@ -311,6 +314,7 @@ func Test_Scenario9(t *testing.T) {
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -324,6 +328,7 @@ func Test_Scenario9(t *testing.T) {
 	_ = app.users.Add(ctx, user1)
 
 	user2 := &models.User{
+		Id:          "Arkasha",
 		Name:        "Arkasha",
 		Sex:         true,
 		Age:         20,

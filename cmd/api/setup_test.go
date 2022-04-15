@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/Eretic431/datingTelegramBot/internal/data/postgres"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"log"
 	"os"
@@ -17,8 +18,22 @@ func TestMain(m *testing.M) {
 }
 
 func newTestApp() *application {
-	c, _ := getConfig()
-	log.Print(c.PostgresUrl)
+	mainConfig, err := getConfig()
+	if err != nil {
+		log.Printf("%e", err)
+		return nil
+	}
+	sugaredLogger, _, err := newLogger(mainConfig)
+	if err != nil {
+		log.Printf("%e", err)
+		return nil
+	}
+	postgresConfig := newPostgresConfig(mainConfig, sugaredLogger)
+	_, _, err = postgres.NewPsqlPool(postgresConfig)
+	if err != nil {
+		log.Printf("%e", err)
+		return nil
+	}
 	app, _, err := initApp()
 	if err != nil {
 		log.Fatalf("could not create app %s", err.Error())

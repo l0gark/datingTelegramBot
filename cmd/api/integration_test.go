@@ -339,10 +339,16 @@ func Test_Scenario9(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user2)
 
-	cq := &tgbotapi.CallbackQuery{From: &tgbotapi.User{UserName: "Masha"}, Data: "like;Arkasha"}
+	cq := &tgbotapi.CallbackQuery{
+		From:    &tgbotapi.User{UserName: "Masha"},
+		Data:    "like;Arkasha",
+		Message: &tgbotapi.Message{Chat: &tgbotapi.Chat{ID: 123}}}
 	_, _ = app.handleCallbackQuery(ctx, cq)
 
-	cq = &tgbotapi.CallbackQuery{From: &tgbotapi.User{UserName: "Arkasha"}, Data: "like;Masha"}
+	cq = &tgbotapi.CallbackQuery{
+		From:    &tgbotapi.User{UserName: "Arkasha"},
+		Data:    "like;Masha",
+		Message: &tgbotapi.Message{Chat: &tgbotapi.Chat{ID: 123}}}
 	chattable, _ := app.handleCallbackQuery(ctx, cq)
 	_, ok := chattable[0].(*tgbotapi.PhotoConfig)
 	assert.True(t, ok)

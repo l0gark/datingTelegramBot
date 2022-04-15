@@ -159,6 +159,7 @@ func Test_Scenario5(t *testing.T) {
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,

@@ -19,10 +19,12 @@ func TestMain(m *testing.M) {
 func newTestApp() *application {
 	app, _, err := initApp()
 	if err != nil {
-		log.Fatalf("could not create app %e", err)
+		log.Fatalf("could not create app %s", err.Error())
 	}
-	_ = refreshUsersTable()
+	db = app.users.DB.(*pgxpool.Pool)
+
 	_ = refreshLikesTable()
+	_ = refreshUsersTable()
 
 	return app
 }
@@ -34,7 +36,7 @@ func refreshUsersTable() error {
 		log.Fatal(err)
 	}
 
-	_, err = conn.Exec(ctx, "TRUNCATE TABLE users;")
+	_, err = conn.Exec(ctx, "DELETE FROM users;")
 
 	if err != nil {
 		log.Fatalf("Error truncating users table: %s", err)
@@ -49,7 +51,7 @@ func refreshLikesTable() error {
 		log.Fatal(err)
 	}
 
-	_, err = conn.Exec(ctx, "TRUNCATE TABLE likes;")
+	_, err = conn.Exec(ctx, "DELETE FROM likes;")
 
 	if err != nil {
 		log.Fatalf("Error truncating likes table: %s", err)

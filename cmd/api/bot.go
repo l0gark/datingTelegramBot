@@ -14,11 +14,13 @@ var (
 	commands = make(map[string]struct{}, 3)
 )
 
-func (a *application) handleUpdates() {
+func init() {
 	commands["start"] = struct{}{}
 	commands["profile"] = struct{}{}
 	commands["next"] = struct{}{}
+}
 
+func (a *application) handleUpdates() {
 	for update := range a.updates {
 		ctx := context.Background()
 		var outputMessages []tgbotapi.Chattable
@@ -77,6 +79,7 @@ func (a *application) handleUserMessage(ctx context.Context, msg *tgbotapi.Messa
 			}
 		}
 	} else {
+		log.Printf(msg.Command())
 		_, ok := commands[msg.Command()]
 		if ok {
 			started, err := a.usecase.IsStarted(ctx, msg)

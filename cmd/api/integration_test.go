@@ -583,7 +583,7 @@ func Test_Scenario14(t *testing.T) {
 		Chat:     &tgbotapi.Chat{ID: 1},
 	}
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.PhotoConfig)
+	resp := chattable[0].(tgbotapi.PhotoConfig)
 
 	expected := fmt.Sprintf("*Имя:* %s\n"+
 		"*Возраст:* %d\n"+

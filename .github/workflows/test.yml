@@ -15,21 +15,27 @@ jobs:
       postgres:
         image: postgres
         env:
+          POSTGRES_DB: postgres
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: tgbot
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
-      migrate:
-        image:  migrate/migrate
 
     name: checkout
     runs-on: ubuntu-latest
     steps:
     - uses: actions/setup-go@v3
     - uses: actions/checkout@v3
-    - run: docker run -v migrations:/migrations --network postgres migrate/migrate -path=/migrations/ -database postgres://postgres:tgbot@db:5432/postgres?sslmode=disable up
+    - name: Install golang-migrate
+      run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.1/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate.linux-amd64 /usr/bin/
+          which migrate
+    - run: make migrate_up 2
     - run: go test ./internal/usecase ./internal/data/postgres -v

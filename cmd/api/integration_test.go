@@ -40,7 +40,7 @@ func Test_Scenario1_2(t *testing.T) {
 	msg := &tgbotapi.Message{
 		From:     &tgbotapi.User{UserName: "test"},
 		Text:     "/profile",
-		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 7}},
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
 		Chat:     &tgbotapi.Chat{ID: 1},
 	}
 	ctx := context.Background()

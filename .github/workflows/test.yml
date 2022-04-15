@@ -11,9 +11,25 @@ on:
 
 jobs:
   test:
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: tgbot
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      migrate:
+        image:  migrate/migrate
+
     name: checkout
     runs-on: ubuntu-latest
     steps:
     - uses: actions/setup-go@v3
     - uses: actions/checkout@v3
+    - run: docker run -v ./migrations:/migrations --network host migrate/migrate -path=/migrations/ -database postgres://postgres:tgbot@db:5432/postgres?sslmode=disable up
     - run: go test ./internal/...

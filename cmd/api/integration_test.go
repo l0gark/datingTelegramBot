@@ -506,16 +506,15 @@ func Test_Scenario13(t *testing.T) {
 		City:        "test",
 		Image:       "hardcoded",
 		Started:     true,
-		Stage:       1,
+		Stage:       4,
 		ChatId:      123,
 	}
 	_ = app.users.Add(ctx, user1)
 
 	msg := &tgbotapi.Message{
-		From:     &tgbotapi.User{UserName: "Masha"},
-		Text:     "/profile",
-		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
-		Chat:     &tgbotapi.Chat{ID: 1},
+		From: &tgbotapi.User{UserName: "Masha"},
+		Text: "haha",
+		Chat: &tgbotapi.Chat{ID: 1},
 	}
 	chattable, _ := app.handleMessage(ctx, msg)
 	resp := chattable[0].(tgbotapi.MessageConfig)
@@ -530,6 +529,7 @@ func Test_Scenario14(t *testing.T) {
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -543,6 +543,7 @@ func Test_Scenario14(t *testing.T) {
 	_ = app.users.Add(ctx, user1)
 
 	user2 := &models.User{
+		Id:          "Arkasha",
 		Name:        "Arkasha",
 		Sex:         true,
 		Age:         20,
@@ -556,6 +557,7 @@ func Test_Scenario14(t *testing.T) {
 	_ = app.users.Add(ctx, user2)
 
 	user3 := &models.User{
+		Id:          "Vitya",
 		Name:        "Vitya",
 		Sex:         true,
 		Age:         20,
@@ -568,10 +570,18 @@ func Test_Scenario14(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user3)
 
-	cq := &tgbotapi.CallbackQuery{From: &tgbotapi.User{UserName: "Vitya"}, Data: "like;Masha"}
+	cq := &tgbotapi.CallbackQuery{
+		From:    &tgbotapi.User{UserName: "Vitya"},
+		Data:    "like;Masha",
+		Message: &tgbotapi.Message{Chat: &tgbotapi.Chat{ID: 123}}}
 	_, _ = app.handleCallbackQuery(ctx, cq)
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "Masha"}, Text: "/next"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "Masha"},
+		Text:     "/next",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 5}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ := app.handleMessage(ctx, msg)
 	resp := chattable[0].(*tgbotapi.PhotoConfig)
 

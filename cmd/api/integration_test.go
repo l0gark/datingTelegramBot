@@ -506,7 +506,7 @@ func Test_Scenario13(t *testing.T) {
 		City:        "test",
 		Image:       "hardcoded",
 		Started:     true,
-		Stage:       4,
+		Stage:       1,
 		ChatId:      123,
 	}
 	_ = app.users.Add(ctx, user1)
@@ -520,7 +520,7 @@ func Test_Scenario13(t *testing.T) {
 	chattable, _ := app.handleMessage(ctx, msg)
 	resp := chattable[0].(tgbotapi.MessageConfig)
 
-	expected := "Данные введены некорректно, попробуйте снова."
+	expected := "Пожалуйста дозаполните анкету."
 
 	assert.Equal(t, expected, resp.Text)
 }

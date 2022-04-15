@@ -13,7 +13,8 @@ import (
 func Test_Scenario1_1(t *testing.T) {
 	app := newTestApp()
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "@/start"}
+	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"},
+		Text: "/start", Entities: []tgbotapi.MessageEntity{{Type: "bot_command"}}}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
 	resp := chattable[0].(*tgbotapi.MessageConfig)

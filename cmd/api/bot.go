@@ -40,7 +40,6 @@ func (a *application) handleUpdates() {
 			if message != nil {
 				if _, err := a.bot.Send(message); err != nil {
 					a.log.Warnf("could not send message with error %e", err)
-					return
 				}
 			}
 		}

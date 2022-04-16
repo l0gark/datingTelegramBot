@@ -220,3 +220,23 @@ func (ur *UserRepository) GetNextUser(ctx context.Context, userId string, sex bo
 
 	return user, nil
 }
+
+func (ur *UserRepository) DeleteAll(ctx context.Context) (err error) {
+	tx, err := ur.DB.Begin(ctx)
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
+
+	_, err = tx.Exec(ctx, "DELETE FROM users;")
+
+	return
+}

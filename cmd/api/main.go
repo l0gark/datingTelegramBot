@@ -41,6 +41,8 @@ func main() {
 		http.HandleFunc("/deleteAll", app.deleteAllHandler)
 		http.HandleFunc("/addTestUser", app.addTestUser)
 		http.HandleFunc("/addTestUserWithLike", app.addTestUserWithLike)
+		http.HandleFunc("/panic", app.panicHandler)
+		http.HandleFunc("/ping", app.pingPong)
 
 		if err = http.ListenAndServe(":8090", nil); err != nil {
 			log.Fatalf("couldn't start listen and serve with err = %e", err)
@@ -79,6 +81,14 @@ func newPostgresConfig(c *config, logger *zap.SugaredLogger) *postgres.Config {
 		PostgresUrl: c.PostgresUrl,
 		Logger:      logger,
 	}
+}
+
+func (a *application) panicHandler(w http.ResponseWriter, r *http.Request) {
+	panic("emulate some panic")
+}
+
+func (a *application) pingPong(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write([]byte("pong"))
 }
 
 func (a *application) deleteAllHandler(w http.ResponseWriter, r *http.Request) {

@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 import pytest
 import requests
@@ -386,3 +387,22 @@ async def test_scenario25(client: TelegramClient):
         await resp.click(0)
         resp: Message = await conv.get_response()
         assert resp.raw_text == "Сколько Вам лет?"
+
+
+def test_regeneration():
+    requests.get('https://localhost:8090/panic')
+    start = time.time()
+
+    success = False
+
+    while not success:
+        try:
+            r = requests.get('https://localhost:8090/ping', timeout=0)
+            r.raise_for_status()
+            success = True
+        except requests.exceptions.HTTPError as err:
+            print('dead')
+
+    end = time.time()
+
+    print(end - start)

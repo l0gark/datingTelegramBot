@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"context"
 	"github.com/Eretic431/datingTelegramBot/internal"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"go.uber.org/zap"
@@ -44,12 +43,3 @@ const (
 	MaxProfileStage  = 5
 	ProfileStageNone = -1
 )
-
-func (u *Usecase) DeleteAll(ctx context.Context) {
-	if err := u.likes.DeleteAll(ctx); err != nil {
-		u.log.Errorf("couldn't delete all likes with err = %e", err)
-	}
-	if err := u.users.DeleteAll(ctx); err != nil {
-		u.log.Errorf("couldn't delete all users with err = %e", err)
-	}
-}

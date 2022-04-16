@@ -63,6 +63,20 @@ func (mr *MockLikesRepositoryMockRecorder) Delete(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockLikesRepository)(nil).Delete), arg0, arg1)
 }
 
+// DeleteAll mocks base method.
+func (m *MockLikesRepository) DeleteAll(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAll", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAll indicates an expected call of DeleteAll.
+func (mr *MockLikesRepositoryMockRecorder) DeleteAll(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAll", reflect.TypeOf((*MockLikesRepository)(nil).DeleteAll), ctx)
+}
+
 // Get mocks base method.
 func (m *MockLikesRepository) Get(arg0 context.Context, arg1, arg2 string) (*models.Like, error) {
 	m.ctrl.T.Helper()

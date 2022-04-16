@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type application struct {
@@ -38,6 +39,8 @@ func main() {
 
 	go func() {
 		http.HandleFunc("/deleteAll", app.deleteAllHandler)
+		http.HandleFunc("/addTestUser", app.addTestUser)
+		http.HandleFunc("/addTestUserWithLike", app.addTestUserWithLike)
 
 		if err = http.ListenAndServe(":8090", nil); err != nil {
 			log.Fatalf("couldn't start listen and serve with err = %e", err)
@@ -79,7 +82,32 @@ func newPostgresConfig(c *config, logger *zap.SugaredLogger) *postgres.Config {
 }
 
 func (a *application) deleteAllHandler(w http.ResponseWriter, r *http.Request) {
-	a.usecase.DeleteAll(r.Context())
+	_ = a.usecase.DeleteAll(r.Context())
 	a.log.Info("deleting completed")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (a *application) addTestUser(w http.ResponseWriter, r *http.Request) {
+	sexStr := r.URL.Query().Get("sex")
+	sex, err := strconv.ParseBool(sexStr)
+	if err != nil {
+		a.log.Errorf("couldn't parse query parametr sex = %s", sexStr)
+	}
+	_ = a.usecase.AddTestUser(r.Context(), sex)
+	a.log.Info("test user added")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (a *application) addTestUserWithLike(w http.ResponseWriter, r *http.Request) {
+	sexStr := r.URL.Query().Get("sex")
+	sex, err := strconv.ParseBool(sexStr)
+	if err != nil {
+		a.log.Errorf("couldn't parse query parametr sex = %s", sexStr)
+	}
+
+	toId := r.URL.Query().Get("toId")
+
+	_ = a.usecase.AddTestUserWithLike(r.Context(), sex, toId)
+	a.log.Info("test user with like added")
 	w.WriteHeader(http.StatusOK)
 }

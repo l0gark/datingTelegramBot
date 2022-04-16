@@ -390,19 +390,66 @@ async def test_scenario25(client: TelegramClient):
 
 
 def test_regeneration():
-    requests.get('https://localhost:8090/panic')
-    start = time.time()
+    n = 10
+    times = [0.0] * n
 
-    success = False
-
-    while not success:
+    for i in range(n):
         try:
-            r = requests.get('https://localhost:8090/ping', timeout=0)
-            r.raise_for_status()
-            success = True
-        except requests.exceptions.HTTPError as err:
-            print('dead')
+            requests.post('http://localhost:8090/panic', verify=False, timeout=1)
+        except requests.exceptions.ConnectionError as e:
+            pass
 
-    end = time.time()
+        start = time.time()
 
-    print(end - start)
+        success = False
+        max_recover_time = 10.0
+
+        while not success or time.time() - start >= max_recover_time:
+            try:
+                r = requests.get('http://localhost:8090/ping')
+                r.raise_for_status()
+                success = True
+            except requests.exceptions.ConnectionError:
+                pass
+
+        end = time.time()
+        recover_time = end - start
+        assert recover_time < max_recover_time
+        times[i] = recover_time
+
+        print('\n' + str(i) + '.', recover_time)
+
+    print('\nAverage recovering time =', sum(times) / n)
+
+
+def test_regeneration():
+    n = 3
+    times = [0.0] * n
+
+    for i in range(n):
+        try:
+            requests.post('http://localhost:8090/panic')
+        except requests.exceptions.ConnectionError as e:
+            pass
+
+        start = time.time()
+
+        success = False
+        max_recover_time = 10.0
+
+        while not success or time.time() - start >= max_recover_time:
+            try:
+                r = requests.get('http://localhost:8090/ping')
+                r.raise_for_status()
+                success = True
+            except requests.exceptions.ConnectionError:
+                pass
+
+        end = time.time()
+        recover_time = end - start
+        assert recover_time < max_recover_time
+        times[i] = recover_time
+
+        print('\n' + str(i) + '.', recover_time)
+
+    print('\nAverage recovering time =', sum(times) / n)

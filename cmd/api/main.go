@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -84,10 +85,13 @@ func newPostgresConfig(c *config, logger *zap.SugaredLogger) *postgres.Config {
 }
 
 func (a *application) panicHandler(w http.ResponseWriter, r *http.Request) {
-	panic("emulate some panic")
+	a.log.Info("panicHandler")
+	//panic("emulate some panic")
+	os.Exit(1)
 }
 
 func (a *application) pingPong(w http.ResponseWriter, r *http.Request) {
+	a.log.Info("pingPongHandler")
 	_, _ = w.Write([]byte("pong"))
 }
 

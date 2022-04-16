@@ -615,3 +615,87 @@ func Test_Scenario15(t *testing.T) {
 
 	assert.Equal(t, expected, resp.Text)
 }
+
+func Test_Scenario16(t *testing.T) {
+	app := newTestApp()
+
+	ctx := context.Background()
+	user1 := &models.User{
+		Id:          "Masha",
+		Name:        "Masha",
+		Sex:         false,
+		Age:         20,
+		Description: "haha",
+		City:        "test",
+		Image:       "hardcoded",
+		Started:     true,
+		Stage:       -1,
+		ChatId:      123,
+	}
+	_ = app.users.Add(ctx, user1)
+
+	user2 := &models.User{
+		Id:          "Arkasha",
+		Name:        "Arkasha",
+		Sex:         true,
+		Age:         20,
+		Description: "haha",
+		City:        "test",
+		Image:       "hardcoded",
+		Started:     true,
+		Stage:       -1,
+		ChatId:      123,
+	}
+	_ = app.users.Add(ctx, user2)
+
+	cq := &tgbotapi.CallbackQuery{
+		From:    &tgbotapi.User{UserName: "Masha"},
+		Data:    "like;Arkasha",
+		Message: &tgbotapi.Message{Chat: &tgbotapi.Chat{ID: 123}}}
+	_, _ = app.handleCallbackQuery(ctx, cq)
+
+	_, err := app.likes.Get(context.Background(), "Masha", "Arkasha")
+
+	assert.Nil(t, err)
+}
+
+func Test_Scenario17(t *testing.T) {
+	app := newTestApp()
+
+	ctx := context.Background()
+	user1 := &models.User{
+		Id:          "Masha",
+		Name:        "Masha",
+		Sex:         false,
+		Age:         20,
+		Description: "haha",
+		City:        "test",
+		Image:       "hardcoded",
+		Started:     true,
+		Stage:       -1,
+		ChatId:      123,
+	}
+	_ = app.users.Add(ctx, user1)
+
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "Masha"},
+		Text:     "/profile",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
+	chattable, _ := app.handleMessage(ctx, msg)
+	resp := chattable[0].(tgbotapi.MessageConfig)
+
+	expected := app.usecase.(*usecase.Usecase).Stages[0]
+	assert.Equal(t, expected, resp.Text)
+
+	msg = &tgbotapi.Message{
+		From: &tgbotapi.User{UserName: "Masha"},
+		Text: "Arkasha",
+		Chat: &tgbotapi.Chat{ID: 1},
+	}
+	_, _ = app.handleMessage(ctx, msg)
+
+	user, _ := app.users.GetByUserId(context.Background(), "Masha")
+	assert.Equal(t, user.Name, "Arkasha")
+}

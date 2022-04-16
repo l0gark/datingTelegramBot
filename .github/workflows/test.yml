@@ -41,7 +41,7 @@ jobs:
     - run: go test ./cmd/api -v
     - run: go test ./internal/usecase ./internal/data/postgres -v
 
-    - run: go run ./cmd/api/main.go
+    - run: go run ./cmd/api/
 
     - name: Set up Python for system testing
       uses: actions/setup-python@v1

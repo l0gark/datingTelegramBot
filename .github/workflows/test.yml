@@ -52,6 +52,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v3
       - uses: actions/checkout@v3
+      - run: docker-compose up --build -d
       - name: Set up Python for system testing
         uses: actions/setup-python@v1
         with:

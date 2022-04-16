@@ -21,12 +21,19 @@ func (u *Usecase) HandleCommandNext(ctx context.Context, chatId int64, user *mod
 	}
 
 	if nextUser != nil {
-		photoCfg := tgbotapi.NewPhoto(chatId, tgbotapi.FileID(nextUser.Image))
-		photoCfg.Caption = internal.CreateProfileCaption(nextUser)
-		photoCfg.ParseMode = tgbotapi.ModeMarkdown
+		if len(nextUser.Image) > 0 {
+			photoCfg := tgbotapi.NewPhoto(chatId, tgbotapi.FileID(nextUser.Image))
+			photoCfg.Caption = internal.CreateProfileCaption(nextUser)
+			photoCfg.ParseMode = tgbotapi.ModeMarkdown
 
-		photoCfg.ReplyMarkup = internal.CreateLikeKeyboardMarkup(nextUser.Id)
-		return photoCfg, nil
+			photoCfg.ReplyMarkup = internal.CreateLikeKeyboardMarkup(nextUser.Id)
+			return photoCfg, nil
+		} else {
+			msgConfig := tgbotapi.NewMessage(chatId, internal.CreateProfileCaption(nextUser))
+			msgConfig.ParseMode = tgbotapi.ModeMarkdown
+			msgConfig.ReplyMarkup = internal.CreateLikeKeyboardMarkup(nextUser.Id)
+			return msgConfig, nil
+		}
 	}
 
 	return tgbotapi.MessageConfig{}, nil

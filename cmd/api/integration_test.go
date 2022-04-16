@@ -12,12 +12,16 @@ import (
 
 func Test_Scenario1_1(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/next"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/start",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 6}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -32,12 +36,16 @@ func Test_Scenario1_1(t *testing.T) {
 
 func Test_Scenario1_2(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/profile",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -52,12 +60,16 @@ func Test_Scenario1_2(t *testing.T) {
 
 func Test_Scenario2(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/start",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 6}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -72,12 +84,16 @@ func Test_Scenario2(t *testing.T) {
 
 func Test_Scenario3(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/start",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 6}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -89,9 +105,14 @@ func Test_Scenario3(t *testing.T) {
 
 	assert.Equal(t, expected, resp.Text)
 
-	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
+	msg = &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/start",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 6}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ = app.handleMessage(ctx, msg)
-	resp = chattable[0].(*tgbotapi.MessageConfig)
+	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = "Вы уже зарегистрированы в системе"
 
@@ -100,12 +121,16 @@ func Test_Scenario3(t *testing.T) {
 
 func Test_Scenario4(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/start",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 6}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -116,9 +141,14 @@ func Test_Scenario4(t *testing.T) {
 	)
 	assert.Equal(t, expected, resp.Text)
 
-	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
+	msg = &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/profile",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ = app.handleMessage(ctx, msg)
-	resp = chattable[0].(*tgbotapi.MessageConfig)
+	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = app.usecase.(*usecase.Usecase).Stages[0]
 	assert.Equal(t, expected, resp.Text)
@@ -126,10 +156,10 @@ func Test_Scenario4(t *testing.T) {
 
 func Test_Scenario5(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -142,9 +172,14 @@ func Test_Scenario5(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user1)
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "Masha"},
+		Text:     "/profile",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := app.usecase.(*usecase.Usecase).Stages[0]
 	assert.Equal(t, expected, resp.Text)
@@ -152,12 +187,16 @@ func Test_Scenario5(t *testing.T) {
 
 func Test_Scenario6(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/start",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 6}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -168,15 +207,25 @@ func Test_Scenario6(t *testing.T) {
 	)
 	assert.Equal(t, expected, resp.Text)
 
-	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
+	msg = &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/profile",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ = app.handleMessage(ctx, msg)
-	resp = chattable[0].(*tgbotapi.MessageConfig)
+	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = app.usecase.(*usecase.Usecase).Stages[0]
 	assert.Equal(t, expected, resp.Text)
 
-	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Document: &tgbotapi.Document{}}
+	msg = &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Document: &tgbotapi.Document{},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ = app.handleMessage(ctx, msg)
+	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = "Данные введены некорректно, попробуйте снова."
 	assert.Equal(t, expected, resp.Text)
@@ -184,10 +233,10 @@ func Test_Scenario6(t *testing.T) {
 
 func Test_Scenario7(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -201,6 +250,7 @@ func Test_Scenario7(t *testing.T) {
 	_ = app.users.Add(ctx, user1)
 
 	user2 := &models.User{
+		Id:          "Arkasha",
 		Name:        "Arkasha",
 		Sex:         true,
 		Age:         20,
@@ -213,19 +263,24 @@ func Test_Scenario7(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user2)
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/next"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "Masha"},
+		Text:     "/next",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 5}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ := app.handleMessage(ctx, msg)
-	_, ok := chattable[0].(*tgbotapi.PhotoConfig)
+	_, ok := chattable[0].(tgbotapi.PhotoConfig)
 
 	assert.True(t, ok)
 }
 
 func Test_Scenario8(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -238,9 +293,14 @@ func Test_Scenario8(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user1)
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/next"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "Masha"},
+		Text:     "/next",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 5}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := "Все анкеты просмотрены. Попробуйте ещё раз немного позже."
 
@@ -249,10 +309,10 @@ func Test_Scenario8(t *testing.T) {
 
 func Test_Scenario9(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -266,6 +326,7 @@ func Test_Scenario9(t *testing.T) {
 	_ = app.users.Add(ctx, user1)
 
 	user2 := &models.User{
+		Id:          "Arkasha",
 		Name:        "Arkasha",
 		Sex:         true,
 		Age:         20,
@@ -278,23 +339,29 @@ func Test_Scenario9(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user2)
 
-	cq := &tgbotapi.CallbackQuery{From: &tgbotapi.User{UserName: "Masha"}, Data: "like;Arkasha"}
+	cq := &tgbotapi.CallbackQuery{
+		From:    &tgbotapi.User{UserName: "Masha"},
+		Data:    "like;Arkasha",
+		Message: &tgbotapi.Message{Chat: &tgbotapi.Chat{ID: 123}}}
 	_, _ = app.handleCallbackQuery(ctx, cq)
 
-	cq = &tgbotapi.CallbackQuery{From: &tgbotapi.User{UserName: "Arkasha"}, Data: "like;Masha"}
+	cq = &tgbotapi.CallbackQuery{
+		From:    &tgbotapi.User{UserName: "Arkasha"},
+		Data:    "like;Masha",
+		Message: &tgbotapi.Message{Chat: &tgbotapi.Chat{ID: 123}}}
 	chattable, _ := app.handleCallbackQuery(ctx, cq)
-	_, ok := chattable[0].(*tgbotapi.PhotoConfig)
+	_, ok := chattable[0].(tgbotapi.PhotoConfig)
 	assert.True(t, ok)
-	_, ok = chattable[1].(*tgbotapi.PhotoConfig)
+	_, ok = chattable[1].(tgbotapi.PhotoConfig)
 	assert.True(t, ok)
 }
 
 func Test_Scenario10(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -308,6 +375,7 @@ func Test_Scenario10(t *testing.T) {
 	_ = app.users.Add(ctx, user1)
 
 	user2 := &models.User{
+		Id:          "Arkasha",
 		Name:        "Arkasha",
 		Sex:         true,
 		Age:         20,
@@ -320,19 +388,24 @@ func Test_Scenario10(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user2)
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/next"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "Masha"},
+		Text:     "/next",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 5}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ := app.handleMessage(ctx, msg)
-	_, ok := chattable[0].(*tgbotapi.MessageConfig)
+	_, ok := chattable[0].(tgbotapi.PhotoConfig)
 
 	assert.True(t, ok)
 }
 
 func Test_Scenario11(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -346,6 +419,7 @@ func Test_Scenario11(t *testing.T) {
 	_ = app.users.Add(ctx, user1)
 
 	user2 := &models.User{
+		Id:          "Arkasha",
 		Name:        "Arkasha",
 		Sex:         true,
 		Age:         20,
@@ -358,7 +432,10 @@ func Test_Scenario11(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user2)
 
-	cq := &tgbotapi.CallbackQuery{From: &tgbotapi.User{UserName: "Masha"}, Data: "like;Arkasha"}
+	cq := &tgbotapi.CallbackQuery{
+		From:    &tgbotapi.User{UserName: "Masha"},
+		Data:    "like;Arkasha",
+		Message: &tgbotapi.Message{Chat: &tgbotapi.Chat{ID: 123}}}
 	_, _ = app.handleCallbackQuery(ctx, cq)
 
 	_, err := app.likes.Get(ctx, "Masha", "Arkasha")
@@ -367,12 +444,16 @@ func Test_Scenario11(t *testing.T) {
 
 func Test_Scenario12(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/start"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/start",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 6}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := fmt.Sprintf("Привет! Я, %s, помогаю людям познакомиться\n\n"+
 		"*Список доступных команд:* \n"+
@@ -384,18 +465,28 @@ func Test_Scenario12(t *testing.T) {
 
 	assert.Equal(t, expected, resp.Text)
 
-	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/next"}
+	msg = &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/next",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 5}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ = app.handleMessage(ctx, msg)
-	resp = chattable[0].(*tgbotapi.MessageConfig)
+	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = "Все анкеты просмотрены. Попробуйте ещё раз немного позже."
 
 	assert.Equal(t, expected, resp.Text)
 
-	msg = &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
+	msg = &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "test"},
+		Text:     "/profile",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	ctx = context.Background()
 	chattable, _ = app.handleMessage(ctx, msg)
-	resp = chattable[0].(*tgbotapi.MessageConfig)
+	resp = chattable[0].(tgbotapi.MessageConfig)
 
 	expected = app.usecase.(*usecase.Usecase).Stages[0]
 
@@ -404,10 +495,10 @@ func Test_Scenario12(t *testing.T) {
 
 func Test_Scenario13(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -420,9 +511,13 @@ func Test_Scenario13(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user1)
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/profile"}
+	msg := &tgbotapi.Message{
+		From: &tgbotapi.User{UserName: "Masha"},
+		Text: "haha",
+		Chat: &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := "Данные введены некорректно, попробуйте снова."
 
@@ -431,10 +526,10 @@ func Test_Scenario13(t *testing.T) {
 
 func Test_Scenario14(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
 	ctx := context.Background()
 	user1 := &models.User{
+		Id:          "Masha",
 		Name:        "Masha",
 		Sex:         false,
 		Age:         20,
@@ -448,6 +543,7 @@ func Test_Scenario14(t *testing.T) {
 	_ = app.users.Add(ctx, user1)
 
 	user2 := &models.User{
+		Id:          "Arkasha",
 		Name:        "Arkasha",
 		Sex:         true,
 		Age:         20,
@@ -461,6 +557,7 @@ func Test_Scenario14(t *testing.T) {
 	_ = app.users.Add(ctx, user2)
 
 	user3 := &models.User{
+		Id:          "Vitya",
 		Name:        "Vitya",
 		Sex:         true,
 		Age:         20,
@@ -473,12 +570,20 @@ func Test_Scenario14(t *testing.T) {
 	}
 	_ = app.users.Add(ctx, user3)
 
-	cq := &tgbotapi.CallbackQuery{From: &tgbotapi.User{UserName: "Vitya"}, Data: "like;Masha"}
+	cq := &tgbotapi.CallbackQuery{
+		From:    &tgbotapi.User{UserName: "Vitya"},
+		Data:    "like;Masha",
+		Message: &tgbotapi.Message{Chat: &tgbotapi.Chat{ID: 123}}}
 	_, _ = app.handleCallbackQuery(ctx, cq)
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "Masha"}, Text: "/next"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "Masha"},
+		Text:     "/next",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 5}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.PhotoConfig)
+	resp := chattable[0].(tgbotapi.PhotoConfig)
 
 	expected := fmt.Sprintf("*Имя:* %s\n"+
 		"*Возраст:* %d\n"+
@@ -491,12 +596,16 @@ func Test_Scenario14(t *testing.T) {
 
 func Test_Scenario15(t *testing.T) {
 	app := newTestApp()
-	_ = refreshUsersTable()
 
-	msg := &tgbotapi.Message{From: &tgbotapi.User{UserName: "test"}, Text: "/asdkajsd"}
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "Masha"},
+		Text:     "/nextaaaaaa",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 10}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
 	ctx := context.Background()
 	chattable, _ := app.handleMessage(ctx, msg)
-	resp := chattable[0].(*tgbotapi.MessageConfig)
+	resp := chattable[0].(tgbotapi.MessageConfig)
 
 	expected := "Такой команды не существует.\n\n" +
 		"*Список доступных команд:* \n" +
@@ -505,4 +614,88 @@ func Test_Scenario15(t *testing.T) {
 		"- /next - показать следующего пользователя"
 
 	assert.Equal(t, expected, resp.Text)
+}
+
+func Test_Scenario16(t *testing.T) {
+	app := newTestApp()
+
+	ctx := context.Background()
+	user1 := &models.User{
+		Id:          "Masha",
+		Name:        "Masha",
+		Sex:         false,
+		Age:         20,
+		Description: "haha",
+		City:        "test",
+		Image:       "hardcoded",
+		Started:     true,
+		Stage:       -1,
+		ChatId:      123,
+	}
+	_ = app.users.Add(ctx, user1)
+
+	user2 := &models.User{
+		Id:          "Arkasha",
+		Name:        "Arkasha",
+		Sex:         true,
+		Age:         20,
+		Description: "haha",
+		City:        "test",
+		Image:       "hardcoded",
+		Started:     true,
+		Stage:       -1,
+		ChatId:      123,
+	}
+	_ = app.users.Add(ctx, user2)
+
+	cq := &tgbotapi.CallbackQuery{
+		From:    &tgbotapi.User{UserName: "Masha"},
+		Data:    "like;Arkasha",
+		Message: &tgbotapi.Message{Chat: &tgbotapi.Chat{ID: 123}}}
+	_, _ = app.handleCallbackQuery(ctx, cq)
+
+	_, err := app.likes.Get(context.Background(), "Masha", "Arkasha")
+
+	assert.Nil(t, err)
+}
+
+func Test_Scenario17(t *testing.T) {
+	app := newTestApp()
+
+	ctx := context.Background()
+	user1 := &models.User{
+		Id:          "Masha",
+		Name:        "Masha",
+		Sex:         false,
+		Age:         20,
+		Description: "haha",
+		City:        "test",
+		Image:       "hardcoded",
+		Started:     true,
+		Stage:       -1,
+		ChatId:      123,
+	}
+	_ = app.users.Add(ctx, user1)
+
+	msg := &tgbotapi.Message{
+		From:     &tgbotapi.User{UserName: "Masha"},
+		Text:     "/profile",
+		Entities: []tgbotapi.MessageEntity{{Type: "bot_command", Length: 8}},
+		Chat:     &tgbotapi.Chat{ID: 1},
+	}
+	chattable, _ := app.handleMessage(ctx, msg)
+	resp := chattable[0].(tgbotapi.MessageConfig)
+
+	expected := app.usecase.(*usecase.Usecase).Stages[0]
+	assert.Equal(t, expected, resp.Text)
+
+	msg = &tgbotapi.Message{
+		From: &tgbotapi.User{UserName: "Masha"},
+		Text: "Arkasha",
+		Chat: &tgbotapi.Chat{ID: 1},
+	}
+	_, _ = app.handleMessage(ctx, msg)
+
+	user, _ := app.users.GetByUserId(context.Background(), "Masha")
+	assert.Equal(t, user.Name, "Arkasha")
 }

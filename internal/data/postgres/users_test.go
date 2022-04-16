@@ -36,6 +36,7 @@ func TestUserRepository_Add(t *testing.T) {
 		user.City,
 		user.Image,
 		user.Started,
+		-1,
 		user.ChatId,
 	).WillReturnResult(pgxmock.NewResult("INSERT", 1))
 	pool.ExpectCommit()
@@ -74,6 +75,7 @@ func TestUserRepository_Add_ShouldReturnErrorAlreadyExistsOnUniqueViolationFailu
 		user.City,
 		user.Image,
 		user.Started,
+		-1,
 		user.ChatId,
 	).WillReturnError(&pgconn.PgError{Code: pgerrcode.UniqueViolation})
 	pool.ExpectRollback()
@@ -116,6 +118,7 @@ func TestUserRepository_Add_ShouldReturnSameErrorOnFailure(t *testing.T) {
 		user.City,
 		user.Image,
 		user.Started,
+		-1,
 		user.ChatId,
 	).WillReturnError(someError)
 	pool.ExpectRollback()

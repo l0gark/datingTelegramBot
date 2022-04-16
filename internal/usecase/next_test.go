@@ -25,8 +25,9 @@ func TestUsecase_HandleCommandNext(t *testing.T) {
 	}
 
 	expectedUser := &models.User{
-		Id:  "123",
-		Sex: false,
+		Id:    "123",
+		Sex:   false,
+		Image: "123",
 	}
 
 	usersRepo.EXPECT().

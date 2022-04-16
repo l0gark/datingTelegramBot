@@ -151,3 +151,23 @@ func (lr *LikeRepository) Delete(ctx context.Context, id int64) (err error) {
 
 	return nil
 }
+
+func (lr *LikeRepository) DeleteAll(ctx context.Context) (err error) {
+	tx, err := lr.DB.Begin(ctx)
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit(ctx)
+		default:
+			_ = tx.Rollback(ctx)
+		}
+	}()
+
+	_, err = tx.Exec(ctx, "DELETE FROM likes;")
+
+	return
+}

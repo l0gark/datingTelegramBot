@@ -12,4 +12,5 @@ type UsersRepository interface {
 	UpdateByUserId(context.Context, *models.User) error
 	DeleteByUserId(context.Context, string) error
 	GetNextUser(context.Context, string, bool) (*models.User, error)
+	DeleteAll(ctx context.Context) error
 }

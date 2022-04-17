@@ -32,7 +32,8 @@ func (u *Usecase) HandleFillingProfile(
 	inputText string,
 	chatId int64,
 	photoId string,
-	user *models.User) (tgbotapi.Chattable, error) {
+	user *models.User,
+) (tgbotapi.Chattable, error) {
 	var text string
 	skipData := ""
 
@@ -49,19 +50,23 @@ func (u *Usecase) HandleFillingProfile(
 		name := currentData
 		if len(name) > 0 {
 			user.Name = name
-			skipData = strconv.Itoa(user.Age)
+			if user.Age > 0 {
+				skipData = strconv.Itoa(user.Age)
+			}
 		} else {
 			correct = false
 			skipData = user.Name
 		}
 	case 1:
 		age, err := strconv.Atoi(currentData)
-		if err == nil {
+		if err == nil && age > 0 {
 			user.Age = age
 			skipData = user.City
 		} else {
 			correct = false
-			skipData = strconv.Itoa(user.Age)
+			if user.Age > 0 {
+				skipData = strconv.Itoa(user.Age)
+			}
 		}
 	case 2:
 		city := currentData
@@ -118,7 +123,6 @@ func (u *Usecase) HandleFillingProfile(
 		}
 	case 6:
 		skipData = ""
-
 	}
 
 	if correct {

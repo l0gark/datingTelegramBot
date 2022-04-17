@@ -8,8 +8,10 @@ from telethon.tl.custom import Conversation
 from telethon.tl.custom.message import Message
 
 baseUrl = "http://localhost:8090"
-api_id = 11519316
-api_hash = '425a717993b73e9671e2b254a6461e31'
+# TODO: get from env
+api_id = 1
+api_hash = 'abc'
+
 bot = "@SpbstuDatingBot"
 tgSession = "test"
 userId = "l0gark"

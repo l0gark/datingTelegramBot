@@ -1,3 +1,5 @@
 *.http
 .idea/
 coverage
+*.session
+.env

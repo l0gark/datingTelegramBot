@@ -1,6 +1,11 @@
 # Server control
-start:
+start-build:
 	docker-compose up -d --build
+	# Open logs
+	detach xdg-open http://localhost:8888
+
+start:
+	docker-compose up -d
 	# Open logs
 	detach xdg-open http://localhost:8888
 

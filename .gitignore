@@ -3,3 +3,4 @@
 coverage
 *.session
 .env
+report.pdf
